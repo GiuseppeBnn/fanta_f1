@@ -6,6 +6,7 @@ const db = require('./db');
 
 // Configurazione del server Express
 const app = express();
+app.set('view engine', 'ejs');
 db.inizializeDatabase();
 app.use(express.urlencoded({ extended: true }));
 app.use(session({
@@ -46,10 +47,6 @@ app.get('/', (req, res) => {
 
     `);
 });
-
-
-
-
 
 // Pagina di accesso
 app.get('/login', (req, res) => {
@@ -97,9 +94,20 @@ app.post('/login', async (req, res) => {
 });
 
 // Pagina della dashboard (accessibile solo agli utenti autenticati)
-app.get('/dashboard', requireAuth, (req, res) => {
-    res.send(`<h1>Benvenuto nella tua dashboard!</h1>`);
-    //TODO aggiungere implementazione dashboard
+app.get('/dashboard', requireAuth, async (req, res) => {
+    let userId = req.session.userId;
+    let hasTeam = await db.hasTeam(userId);
+    console.log("hasTeam:", hasTeam);
+    if (hasTeam) {
+        let team = await db.getTeam(userId);
+        let teams = await db.getTeams();
+        res.render('user_dashboard', { team: team, teams: teams, hasTeam: hasTeam});
+    }
+    else {
+        db.getTeams().then(teams => {
+            res.render('user_dashboard', { teams: teams, hasTeam: hasTeam});
+        });
+    }
 
 });
 

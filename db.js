@@ -1,8 +1,14 @@
 const mysql = require("mysql2");
 const axios = require("axios");
 const argon2 = require("argon2");
+const cron = require("node-cron");
 
 const pool = createPool();
+
+let lastRoundNum;
+getLastRoundNumber().then((roundNum) => {
+  this.lastRoundNum = roundNum;
+});
 
 function createPool() {
   let pool = mysql.createPool({
@@ -16,7 +22,7 @@ function createPool() {
   return pool;
 }
 
-const inizializeDatabase = () => {
+const inizializeDatabase = async () => {
   pool.execute(
     `
     CREATE TABLE IF NOT EXISTS pilots (
@@ -38,7 +44,9 @@ const inizializeDatabase = () => {
   createPointsTable();
   createUsersTable();
   insertCoins();
-  createTeamTable();
+  await createTeamTable();
+  await createBonusTable();
+  await retrieveAllRoundResults();
 
 };
 
@@ -239,8 +247,7 @@ async function verifyHash(password, hash) {
 }
 
 function verifyAdminAccess(username) {
-  const connection = adminConnection();
-  connection.query(
+  pool.execute(
     `
     SELECT * FROM users WHERE username = ?
     `,
@@ -333,7 +340,7 @@ async function insertCoins() {
   }
 }
 
-async function updateScore(newScore) {    //dove newScore è un oggetto con chiave l'id del pilota e valore il punteggio da aggiungere
+async function updateCoins(newScore) {    //dove newScore è un oggetto con chiave l'id del pilota e valore il punteggio da aggiungere
   return new Promise((resolve, reject) => {
     for (let i = 0; i < Object.keys(newScore).length; i++) {
       pool.execute(
@@ -381,17 +388,17 @@ async function createTeamTable() {
   });
 }
 
-async function insertTeam(userId, pilot1, pilot2, teamName) {
+async function insertTeam(userId, pilot1, pilot2, teamName, score) {
   return new Promise((resolve, reject) => {
     let idPilot1 = pilot1.driverId;
     let idPilot2 = pilot2.driverId;
     pool.execute(
       `
-      INSERT INTO teams (teamId, teamName, idPilot1, idPilot2)
-      VALUES (?,?,?,?)
-      ON DUPLICATE KEY UPDATE teamId = VALUES(teamId), teamName = VALUES(teamName), idPilot1 = VALUES(idPilot1), idPilot2 = VALUES(idPilot2)
+      INSERT INTO teams (teamId, teamName, idPilot1, idPilot2, score)
+      VALUES (?,?,?,?,?)
+      ON DUPLICATE KEY UPDATE teamId = VALUES(teamId), teamName = VALUES(teamName), idPilot1 = VALUES(idPilot1), idPilot2 = VALUES(idPilot2), score = VALUES(score)
       `,
-      [userId, teamName, idPilot1, idPilot2],
+      [userId, teamName, idPilot1, idPilot2, score],
       (err) => {
         if (err) {
           console.error("Errore durante l'inserimento del team:", err);
@@ -404,6 +411,8 @@ async function insertTeam(userId, pilot1, pilot2, teamName) {
     );
   });
 }
+
+
 async function getTeam(userId) {
   return new Promise((resolve, reject) => {
     pool.execute(
@@ -432,30 +441,6 @@ async function getTeams() {
   return new Promise((resolve, reject) => {
     pool.execute(
       `
-      SELECT * FROM teams
-      `,
-      (err, result) => {
-        if (err) {
-          console.error("Errore durante la ricerca dei team:", err);
-          reject(err);
-        } else {
-          if (result.length > 0) {
-            console.log("Team trovati con successo!");
-            resolve(result);
-          } else {
-            console.log("Team non presenti nel database!");
-            resolve(false);
-          }
-        }
-      }
-    );
-  });
-}
-
-async function getUsersTeamScore(){
-  return new Promise((resolve, reject) => {
-    pool.execute(
-      `
       SELECT * FROM teams ORDER BY score DESC
       `,
       (err, result) => {
@@ -476,17 +461,326 @@ async function getUsersTeamScore(){
   });
 }
 
+async function createBonusTable() {
+  return new Promise((resolve, reject) => {
+    pool.execute(
+      `
+      CREATE TABLE IF NOT EXISTS bonus (
+        driverId INT PRIMARY KEY,
+        positionGainedBonus INT,
+        fastestLapBonus INT,
+        UNIQUE (driverId))
+      `,
+      (err) => {
+        if (err) {
+          console.error("Errore durante la creazione della tabella bonus:", err);
+          reject(err);
+        } else {
+          console.log("Tabella dei bonus creata con successo!");
+          resolve(true);
+        }
+      }
+    );
+  })
+}
+
+function calculateBonus(lastRoundResult) {
+  let positionGainedBonus = calculatePositionGainedBonus(lastRoundResult);
+  let fastestLapBonus = calculateFastestLapBonus(lastRoundResult);
+  let bonus = {};
+  for (let i = 0; i < Object.keys(positionGainedBonus).length; i++) {
+    let driverId = Object.keys(positionGainedBonus)[i];
+    bonus[driverId] = positionGainedBonus[driverId] + fastestLapBonus[driverId];
+  }
+  return bonus;
+}
+function calculatePositionGainedBonus(lastRoundResult) {  //ritorna un oggetto con chiave l'id del pilota e valore il punteggio da aggiungere
+  let positionGainedBonus = {};
+  let length = lastRoundResult.MRData.RaceTable.Races[0].Results.length;
+  let results = lastRoundResult.MRData.RaceTable.Races[0].Results;
+  for (let i = 0; i < length; i++) {
+    let driverId = results[i].number;
+    let positionGained = results[i].grid - results[i].position;
+    positionGainedBonus[driverId] = positionGained * 2;
+  }
+  return positionGainedBonus;
+}
+function calculateFastestLapBonus(lastRoundResult) {  //ritorna un oggetto con chiave l'id del pilota e valore il punteggio da aggiungere
+  let fastestLapBonus = {};
+  let length = lastRoundResult.MRData.RaceTable.Races[0].Results.length;
+  let results = lastRoundResult.MRData.RaceTable.Races[0].Results;
+  for (let i = 0; i < length; i++) {
+    let driverId = results[i].number;
+    let fastestLapRank=0;
+    try{
+      fastestLapRank = results[i].FastestLap.rank;
+    } catch (err) {}
+    if (fastestLapRank == 1) {
+      fastestLapBonus[driverId] = 5;  //punteggio da rivedere
+    }
+    else {
+      fastestLapBonus[driverId] = 0;
+    }
+  }
+  return fastestLapBonus;
+}
+
+async function getRoundResult(roundNumber) {
+  let RoundResult = await axios.get('http://ergast.com/api/f1/current/' + roundNumber + '/results.json');
+  return RoundResult.data;
+}
+
+async function updateBonusTable(lastRoundResult) {
+  let positionGainedBonus = calculatePositionGainedBonus(lastRoundResult);
+  let fastestLapBonus = calculateFastestLapBonus(lastRoundResult);
+  let bonus = {};
+  for(let i = 0; i < Object.keys(positionGainedBonus).length; i++) {
+    let driverId = Object.keys(positionGainedBonus)[i];
+    bonus[driverId] = positionGainedBonus[driverId] + fastestLapBonus[driverId];
+  }
+  for (let i = 0; i < Object.keys(bonus).length; i++) {
+    let driverId = Object.keys(bonus)[i];
+    pool.execute(
+      `
+      INSERT INTO bonus (driverId, positionGainedBonus, fastestLapBonus)
+      VALUES (?,?,?)
+      ON DUPLICATE KEY UPDATE positionGainedBonus = VALUES(positionGainedBonus), fastestLapBonus = VALUES(fastestLapBonus)
+      `,
+      [driverId, positionGainedBonus[driverId], fastestLapBonus[driverId]],
+      (err) => {
+        if (err) {
+          console.error("Errore durante l'aggiornamento del punteggio:", err);
+        } else {
+          console.log("Punteggio aggiornato con successo!");
+        }
+      }
+    );
+  }
+}
+function calculateRacePointsScore(lastRoundResult) {
+  let finalPositionScore = {};
+  let results = lastRoundResult.MRData.RaceTable.Races[0].Results;
+  for (let i = 0; i < results.length; i++) {
+    let driverId = results[i].number;
+    let points = results[i].points;
+    finalPositionScore[driverId] = points;
+  }
+  return finalPositionScore;
+}
+
+
+async function updateScore(lastRoundResult) {
+  let lastRaceScore = calculateRacePointsScore(lastRoundResult);
+  let bonus = calculateBonus(lastRoundResult);
+
+  for (let i = 0; i < Object.keys(bonus).length; i++) {
+    let driverId = Object.keys(bonus)[i];
+    pool.execute(
+      `
+      UPDATE teams
+      SET score = score + ?
+      WHERE idPilot1 = ? OR idPilot2 = ?
+
+      `,
+      [lastRaceScore[driverId] + bonus[driverId], driverId, driverId],
+      (err) => {
+        if (err) {
+          console.error("Errore durante l'aggiornamento del punteggio:", err);
+        } else {
+          console.log("Punteggio aggiornato con successo!");
+        }
+      }
+    );
+  }
+}
+async function updateRoundTotalScore(roundNumber) {
+  let roundResult = await getRoundResult(roundNumber);
+  updateScore(roundResult);
+  updateBonusTable(roundResult);
+}
+
+async function weeklyUpdate(lastRoundNumber) {
+  updateRoundTotalScore(lastRoundNumber);
+}
+
+async function retrieveAllRoundResults() {
+  let lastRoundNumber = await getLastRoundNumber();
+  for (let i = 1; i <= lastRoundNumber; i++) {
+    await updateRoundTotalScore(i);
+  }
+}
+async function getLastRoundNumber() {
+  let lastRound = await axios.get('http://ergast.com/api/f1/current/last/results.json');
+  console.log(lastRound.data);
+  let lastRoundNumber = lastRound.data.MRData.RaceTable.round;
+  return lastRoundNumber;
+}
 
 
 
 
+/*async function getCurrentScore() {    // deprecata
+  return new Promise((resolve, reject) => {
+    pool.execute(
+      `
+      SELECT teamId, score FROM teams
+      `,
+      (err, result) => {
+        if (err) {
+          console.error("Errore durante la ricerca dei team:", err);
+          reject(err);
+        } else {
+          if (result.length > 0) {
+            console.log("Team trovati con successo!");
+            resolve(result);
+          } else {
+            console.log("Team non presenti nel database!");
+            resolve(false);
+          }
+        }
+      }
+    );
+  });
+}*/
+
+async function getBonusTable() {
+  return new Promise((resolve, reject) => {
+    pool.execute(
+      `
+      SELECT * FROM bonus
+      `,
+      (err, result) => {
+        if (err) {
+          console.error("Errore durante la ricerca del bonus:", err);
+          reject(err);
+        } else {
+          if (result.length > 0) {
+            console.log("Bonus trovati con successo!");
+            resolve(result);
+          } else {
+            console.log("Bonus non presenti nel database!");
+            resolve(false);
+          }
+        }
+      }
+    );
+  });
+}
+
+async function hasTeam(userId) {
+  return new Promise((resolve, reject) => {
+    pool.execute(
+      `
+      SELECT * FROM teams
+      WHERE teamId = ?
+      `,
+      [userId],
+      (err, result) => {
+        if (err) {
+          console.error("Errore durante la ricerca del team:", err);
+          reject(err);
+        } else {
+          if (result.length > 0) {
+            console.log("Team trovato con successo!");
+            resolve(true);
+          } else {
+            console.log("Team non presente nel database!");
+            resolve(false);
+          }
+        }
+      }
+    );
+  });
+}
+
+async function getUserId(username){
+  return new Promise((resolve, reject) => {
+    pool.execute(
+      `
+      SELECT userId FROM users
+      WHERE username = ?
+      `,
+      [username],
+      (err, result) => {
+        if (err) {
+          console.error("Errore durante la ricerca dell'utente:", err);
+          reject(err);
+        } else {
+          if (result.length > 0) {
+            console.log("Utente trovato con successo!");
+            resolve(result[0].userId);
+          } else {
+            console.log("Utente non presente nel database!");
+            resolve(false);
+          }
+        }
+      }
+    );
+  });
+}
+
+cron.schedule('0 0 0 * * 1', async () => {    // ogni lunedì controlla se è disponibile un nuovo risultato
+  let newRoundNumber = await getLastRoundNumber();
+  if (lastRoundNum<newRoundNumber){
+    await weeklyUpdate(newRoundNumber);
+  }
+  else if (newRoundNumber==1){
+    await newSeasonCleanup();
+    await inizializeDatabase();
+  }
+});
 
 
-
-
-
-
-
+async function newSeasonCleanup(){ // cancella e ripulisce tutte le table del database
+  pool.execute(
+    `
+    DROP TABLE users
+    `,
+    (err) => {
+      if (err) {
+        console.error("Errore durante la cancellazione degli utenti:", err);
+      } else {
+        console.log("Utenti cancellati con successo!");
+      }
+    }
+  );
+  pool.execute(
+    `
+    DROP TABLE teams
+    `,
+    (err) => {
+      if (err) {
+        console.error("Errore durante la cancellazione dei team:", err);
+      } else {
+        console.log("Team cancellati con successo!");
+      }
+    }
+  );
+  pool.execute(
+    `
+    DROP TABLE bonus
+    `,
+    (err) => {
+      if (err) {
+        console.error("Errore durante la cancellazione del bonus:", err);
+      } else {
+        console.log("Bonus cancellati con successo!");
+      }
+    }
+  );
+  pool.execute(
+    `
+    DROP TABLE coins 
+    `,
+    (err) => {
+      if (err) {
+        console.error("Errore durante la cancellazione delle coins:", err);
+      } else {
+        console.log("Coins cancellate con successo!");
+      }
+    }
+  );
+}
 
 //esporta modulo
-module.exports = {getTeams, getTeam, inizializeDatabase, insertUser, verifyAdminAccess, verifyCredentials, queryUser, getPilots, updateScore, insertTeam, getTeams };
+module.exports = {getUserId,hasTeam,retrieveAllRoundResults, getBonusTable, weeklyUpdate, updateRoundTotalScore, getBonusTable, getTeams, getTeam, inizializeDatabase, insertUser, verifyAdminAccess, verifyCredentials, queryUser, getPilots, updateScore, insertTeam, getTeams };

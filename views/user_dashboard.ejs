@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+</head>
+<body>
+    <% if(!hasTeam){ %>
+        <ul>
+            <li><a href="/team/create">Create Team</a></li>
+            <li><a href="/team/join">Join Team</a></li>
+        </ul>
+        <h2>Teams</h2>
+        <ul>
+            <% for(let i = 0; i < teams.length; i++){ %>
+                <li><%= teams[i].teamName %></a></li>
+            <% } %>
+        </ul>
+            
+    <% }else{ %>
+        <h2> DA IMPLEMENTARE</h2>
+    <% } %>
+    
+
+</body>
+</html>
