@@ -1,6 +1,5 @@
 const db = require("./db");
 
-db.getPilots().then((pilots) => {
+db.getPilotsValues().then((pilots) => {
     console.log(pilots);
-    }
-);
+});

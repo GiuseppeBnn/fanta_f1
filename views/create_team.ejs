@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>New Team</title>
+  </head>
+  <body>
+    <h1>Create a new Team</h1>
+    <h2 id="maxBudget">Maximum value: <%= maxCoinBudget %></h2>
+    <div id="coinsBudget"></div>
+    <div id="coinCounter"></div>
+    <form action="/team/create" method="POST">
+      <label for="teamName">Team Name</label>
+      <input type="text" name="teamName" id="teamName" required />
+      <label for="pilots">Pilots</label>
+      <select name="pilots" id="pilots" multiple="true">
+        <% for(let i = 0; i < pilots.length; i++){ %>
+        <option value="<%= pilots[i].id %>">
+          <%= pilots[i].name %> <%= pilots[i].surname %> <%= pilots[i].value %>
+          coins
+        </option>
+        <% } %>
+      </select>
+      <input type="submit" value="Create" />
+    </form>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        const coinCounter = document.getElementById("coinCounter");
+        const pilotsSelect = document.getElementById("pilots");
+        const coinsBudget = document.getElementById("coinsBudget");
+        const coinsMaxBudget = document.getElementById("maxBudget").innerHTML.match(/\d+/)[0];
+        const form = document.querySelector("form");
+        form.addEventListener("submit", checkBudget);
+
+        // Funzione per calcolare i coins utilizzati dai piloti selezionati
+        function calculateCoinsUsed() {
+          const selectedOptions = Array.from(pilotsSelect.selectedOptions);
+          const coinsUsed = selectedOptions.reduce((totalCoins, option) => {
+            return totalCoins + parseInt(option.dataset.value);
+          }, 0);
+          return coinsUsed;
+        }
+
+        function checkBudget(event) {
+          let coinsUsed = calculateCoinsUsed();
+          console.log(coinsMaxBudget);
+          if (coinsUsed > coinsMaxBudget) {
+            alert("You have exceeded the maximum budget");
+            event = event.preventDefault();
+          } else {
+            alert("Team created successfully");
+          }
+        }
+        function remainingCoins(coinsMaxBudget) {
+          const coinsUsed = calculateCoinsUsed();
+          const remainingCoins = coinsMaxBudget - coinsUsed;
+          return remainingCoins;
+        }
+
+        // Funzione per aggiornare il contatore dei coins utilizzati
+        function updateCoinCounter() {
+          const coinsUsed = calculateCoinsUsed();
+          coinCounter.textContent = `Coins used: ${coinsUsed}`;
+          let rem = remainingCoins(coinsMaxBudget);
+          coinsBudget.innerHTML = `Remaining budget: ${rem}`;
+        }
+
+        // Aggiungi un listener all'input di coins budget e al select dei piloti
+        pilotsSelect.addEventListener("change", updateCoinCounter);
+
+        // Aggiungi un attributo "data-value" a ciascuna opzione per memorizzare il valore dei coins del pilota
+        const options = pilotsSelect.querySelectorAll("option");
+        options.forEach((option) => {
+          const value = parseInt(option.textContent.match(/\d+/)[0]);
+          option.dataset.value = value;
+        });
+      });
+    </script>
+  </body>
+</html>

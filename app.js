@@ -63,7 +63,8 @@ app.get('/login', (req, res) => {
 // Gestione del login
 app.post('/login', async (req, res) => {
     const { username, password } = req.body;
-
+    console.log("username:", username);
+    console.log("password:", password);
     try {
         // Verifica se l'utente esiste nel database
         let bool = await db.verifyCredentials(username, password);
@@ -100,13 +101,14 @@ app.get('/dashboard', requireAuth, async (req, res) => {
     console.log("hasTeam:", hasTeam);
     if (hasTeam) {
         let team = await db.getTeam(userId);
+        let members = await db.getMembersInfo(userId);
         let teams = await db.getTeams();
-        res.render('user_dashboard', { team: team, teams: teams, hasTeam: hasTeam});
+        console.log("Members:", members);
+        res.render('user_dashboard', { team: team, teams: teams, hasTeam: hasTeam, members: members});
     }
     else {
-        db.getTeams().then(teams => {
-            res.render('user_dashboard', { teams: teams, hasTeam: hasTeam});
-        });
+        let teams = await db.getTeams();
+        res.render('user_dashboard', { teams: teams, hasTeam: hasTeam, team: null, });
     }
 
 });
@@ -156,6 +158,35 @@ app.get("/register", (req, res) => {
         <button type="submit">Registrati</button>
     </form>
     `);
+});
+
+app.get("/team/create", requireAuth, async (req, res) => {
+    let userId = req.session.userId;
+    let hasTeam = await db.hasTeam(userId);
+    if (hasTeam) {
+        res.redirect("/dashboard");
+    }
+    else {
+        let maxCoinBudget = 2000;
+        let pilots = await db.getPilotsValues();
+        res.render("create_team", { pilots: pilots, maxCoinBudget: maxCoinBudget });
+    }
+} );
+
+app.post("/team/create", requireAuth, async (req, res) => {
+    let userId = req.session.userId;
+    let hasTeam = await db.hasTeam(userId);
+    if (!hasTeam) {
+        let teamName = req.body.teamName;
+        let pilots = req.body.pilots;
+        console.log("pilots:", pilots);
+        console.log("teamName:", teamName);
+        let score = await db.calculateTeamScore(pilots);
+        pilots= pilots.join(",");
+        console.log("pilotsString :", pilots);  
+        await db.insertTeam(userId, teamName, pilots, score);
+    }
+    res.redirect("/dashboard");
 });
 
 // Avvio del server

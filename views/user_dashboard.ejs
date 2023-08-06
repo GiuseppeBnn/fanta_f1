@@ -9,18 +9,23 @@
     <% if(!hasTeam){ %>
         <ul>
             <li><a href="/team/create">Create Team</a></li>
-            <li><a href="/team/join">Join Team</a></li>
-        </ul>
-        <h2>Teams</h2>
+        </ul><br>            
+    <% }else{ %>
+        <h2><%= team.teamName  %></h2>
+        <h3>Members:</h3>
         <ul>
-            <% for(let i = 0; i < teams.length; i++){ %>
-                <li><%= teams[i].teamName %></a></li>
+            <% for(let i = 0; i < members.length; i++){ %>
+                <li><%= members[i].givenName +" "+ members[i].familyName %> </li>
             <% } %>
         </ul>
-            
-    <% }else{ %>
-        <h2> DA IMPLEMENTARE</h2>
     <% } %>
+    <h2>Global Top Teams</h2>
+        <ol>
+            <% for(let i = 0; i < teams.length; i++){ %>
+                <li><%= teams[i].teamName+" points:"+teams[i].score %></li>
+            <% } %>
+        </ol>
+
     
 
 </body>
