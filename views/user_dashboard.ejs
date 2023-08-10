@@ -4,8 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard</title>
+    <link href="..public/styles/css/style.css" rel="stylesheet">
 </head>
 <body>
+    <!-- tailwind header-->
+    <div class="header bg-gray-800 py-4">
+        <h1>Dashboard</h1>
+        <a href="/logout">Logout</a>
+    </div>
     <% if(!hasTeam){ %>
         <ul>
             <li><a href="/team/create">Create Team</a></li>

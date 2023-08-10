@@ -23,7 +23,7 @@ function createPool() {
 }
 
 const inizializeDatabase = async () => {
-  //await newSeasonCleanup();
+  await newSeasonCleanup();
   pool.execute(
     `
     CREATE TABLE IF NOT EXISTS pilots (
@@ -153,27 +153,31 @@ function createUsersTable() {
         console.error("Errore durante la creazione della tabella:", err);
       } else {
         console.log("Tabella degli utenti creata con successo!");
+        insertAdmin();
       }
     }
   );
-  //insert if not exist admin user
-  argon2.hash("9899").then((hash) => {
-    const criptedPassword = hash;
-    pool.execute(
-      `
+
+  function insertAdmin() {
+    //insert if not exist admin user
+    argon2.hash("9899").then((hash) => {
+      const criptedPassword = hash;
+      pool.execute(
+        `
       INSERT INTO users (username, password, role)
       VALUES (?,?,?)
       ON DUPLICATE KEY UPDATE username = VALUES(username), password = VALUES(password), role = VALUES(role)    `,
-      ["giusbon", criptedPassword, "admin"],
-      (err) => {
-        if (err) {
-          console.error("Errore durante l'inserimento dei dati:", err);
-        } else {
-          console.log("Dati inseriti con successo!");
+        ["giusbon", criptedPassword, "admin"],
+        (err) => {
+          if (err) {
+            console.error("Errore durante l'inserimento dei dati:", err);
+          } else {
+            console.log("Dati inseriti con successo!");
+          }
         }
-      }
-    );
-  });
+      );
+    });
+  }
 }
 async function insertUser(username, password) {  //ritorna false se già presente nel db, true se inserito con successo
   return new Promise((resolve, reject) => {
