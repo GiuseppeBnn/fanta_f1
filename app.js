@@ -9,20 +9,20 @@ const app = express();
 app.set('view engine', 'ejs');
 db.inizializeDatabase();
 app.use(express.urlencoded({ extended: true }));
-app.use(express.static('public'));
+app.use(express.static(__dirname+'/build'));
 app.use(session({
     secret: 'segreto_segretissimo',
     resave: false,
     saveUninitialized: true,
 }));
 
-// Funzione per il controllo dell'autenticazione
+//controllo dell'autenticazione
 function requireAuth(req, res, next) {
     if (req.session && req.session.userId) {
         // L'utente è autenticato, continua con la richiesta
         next();
     } else {
-        // L'utente non è autenticato, reindirizza all'accesso
+        // L'utente non è autenticato, reindirizza al login
         res.redirect('/login');
     }
 }
@@ -40,28 +40,14 @@ function requireAdmin(req, res, next) {
 
 //pagina principale del sito
 app.get('/', (req, res) => {
-    res.send(`
-    <h1>Benvenuto in FF1!</h1>
-    <a href="/login">Accedi</a><br>
-    <a href="/register">Registrati</a>
-    <a href="/info">Info</a>
-
-    `);
+    res.redirect('/teams');
 });
 
-// Pagina di accesso
 app.get('/login', (req, res) => {
-    res.send(`
-    <h1>Pagina di Accesso</h1>
-    <form method="POST" action="/login">
-      <input type="text" name="username" placeholder="Nome Utente" required>
-      <input type="password" name="password" placeholder="Password" required>
-      <button type="submit">Accedi</button>
-    </form>
-  `);
+    res.render('login');
 });
 
-// Gestione del login
+
 app.post('/login', async (req, res) => {
     const { username, password } = req.body;
     console.log("username:", username);
@@ -71,7 +57,7 @@ app.post('/login', async (req, res) => {
         let bool = await db.verifyCredentials(username, password);
         console.log("bool:", bool);
         if (!bool) {
-            res.status(401).send('Nome utente o password errati.'); // 401 = Unauthorized
+            res.status(401).send('Nome utente o password errati, riprova.'); // 401 = Unauthorized
             return;
         }
         let user = await db.queryUser(username);
@@ -128,7 +114,7 @@ app.get('/logout', (req, res) => {
 });
 
 
-// Rotta per la registrazione di un nuovo utente
+//registrazione di un nuovo utente
 app.post('/register', async (req, res) => {
     const { username, password } = req.body;
 
@@ -139,7 +125,8 @@ app.post('/register', async (req, res) => {
             return res.send('L\'utente esiste già.');
         }
         if (await db.insertUser(username, password)) {
-            return res.send('Registrazione completata con successo!');
+            //return res.redirect('/thanks');
+            //TODO: pagina di registrazione avvenuta con successo
         }
         else {
             res.send("Errore nella registrazione");
@@ -150,15 +137,8 @@ app.post('/register', async (req, res) => {
     }
 });
 
-app.get("/register", (req, res) => {
-    res.send(`
-    <h1>Pagina di Registrazione</h1>
-    <form method="POST" action="/register">
-        <input type="text" name="username" placeholder="Nome Utente" required>
-        <input type="password" name="password" placeholder="Password" required>
-        <button type="submit">Registrati</button>
-    </form>
-    `);
+app.get("/register", (req, res) => {  //TODO: pagina di registrazione in ejs
+    res.render("register");
 });
 
 app.get("/team/create", requireAuth, async (req, res) => {
@@ -189,7 +169,26 @@ app.post("/team/create", requireAuth, async (req, res) => {
     }
     res.redirect("/dashboard");
 });
+app.get("/pilot/:id", requireAuth, async (req, res) =>{
+    let pilot = await db.getPilotInfo(req.params.id);
+    res.render("pilot", {pilot: pilot});   //TODO: pilot template
+});
 
+app.get("/round/:r/pilot/:id", requireAuth, async (req, res) =>{
+    let pilot = await db.getPilotInfo(req.params.id);
+    let round = await db.getRoundInfo(req.params.r);
+    res.render("pilot_round", {pilot: pilot, round: round});   //TODO: pilot template with round info and bonus
+});
+app.get("/round/:r", requireAuth, async (req, res) =>{
+    let round = await db.getRoundInfo(req.params.r);
+    res.render("round", {round: round});   //TODO: round template
+});
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////
+/*app.get("*", (req, res) => {
+    res.render("404_not_found");
+});*/
 // Avvio del server
 const port = 3000;
 app.listen(port, () => {
