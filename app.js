@@ -13,7 +13,7 @@ app.use(express.static(__dirname+'/build'));
 app.use(session({
     secret: 'segreto_segretissimo',
     resave: false,
-    saveUninitialized: true,
+    saveUninitialized: false,
 }));
 
 //controllo dell'autenticazione
@@ -44,14 +44,13 @@ app.get('/', (req, res) => {
 });
 
 app.get('/login', (req, res) => {
-    res.render('login');
+    let isAuth = false;
+    res.render('login', {isAuth: isAuth});
 });
 
 
 app.post('/login', async (req, res) => {
     const { username, password } = req.body;
-    console.log("username:", username);
-    console.log("password:", password);
     try {
         // Verifica se l'utente esiste nel database
         let bool = await db.verifyCredentials(username, password);
@@ -83,6 +82,8 @@ app.post('/login', async (req, res) => {
 
 // Pagina della dashboard (accessibile solo agli utenti autenticati)
 app.get('/dashboard', requireAuth, async (req, res) => {
+
+    let isAuth = true;
     let userId = req.session.userId;
     let hasTeam = await db.hasTeam(userId);
     console.log("hasTeam:", hasTeam);
@@ -91,11 +92,11 @@ app.get('/dashboard', requireAuth, async (req, res) => {
         let members = await db.getMembersInfo(userId);
         let teams = await db.getTeams();
         console.log("Members:", members);
-        res.render('user_dashboard', { team: team, teams: teams, hasTeam: hasTeam, members: members});
+        res.render('user_dashboard', { team: team, teams: teams, hasTeam: hasTeam, members: members, isAuth: isAuth});
     }
     else {
         let teams = await db.getTeams();
-        res.render('user_dashboard', { teams: teams, hasTeam: hasTeam, team: null, });
+        res.render('user_dashboard', { teams: teams, hasTeam: hasTeam, team: null, isAuth: isAuth});
     }
 
 });
@@ -112,6 +113,10 @@ app.get('/logout', (req, res) => {
         res.redirect('/login');
     });
 });
+app.get('/thanks', (req, res) => {
+    let isAuth = false;
+    res.render('thanks', {isAuth: isAuth});
+});
 
 
 //registrazione di un nuovo utente
@@ -121,15 +126,14 @@ app.post('/register', async (req, res) => {
     try {
         // Verifica se l'utente esiste già nel database
         const existingUser = await db.queryUser(username);
-        if (existingUser && existingUser.length > 0) {
-            return res.send('L\'utente esiste già.');
+        if (existingUser.username.length > 0) {
+            return res.render('register', { error: 'Username already taken, try another', isAuth: false });
         }
-        if (await db.insertUser(username, password)) {
-            //return res.redirect('/thanks');
-            //TODO: pagina di registrazione avvenuta con successo
+        else if (await db.insertUser(username, password)) {
+            return res.redirect('/thanks');
         }
         else {
-            res.send("Errore nella registrazione");
+            res.send("registration error");
         }
     } catch (error) {
         console.error('Errore durante la registrazione:', error);
@@ -137,8 +141,9 @@ app.post('/register', async (req, res) => {
     }
 });
 
-app.get("/register", (req, res) => {  //TODO: pagina di registrazione in ejs
-    res.render("register");
+app.get("/register", (req, res) => {
+    let isAuth = false;
+    res.render("register", {isAuth: isAuth});
 });
 
 app.get("/team/create", requireAuth, async (req, res) => {

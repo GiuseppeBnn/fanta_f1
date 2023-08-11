@@ -1,46 +1,72 @@
 <div class="container mx-auto p-8">
-    <form action="/register" method="POST" onsubmit="validateRegisterForm()">
-        <div class="mb-4">
-            <label for="username" class="block text-sm mb-2">Username</label>
-            <input type="username" name="username" id="username" class="border-b-primary border-b-2 w-full py-2 px-3 leading-tight max-w-sm text-content outline-none bg-secondary" required>
-        </div>
-        <div class="mb-4">
-            <label for="password" class="block text-sm mb-2">Password</label>
-            <input type="password" name="password" id="password" class="border-b-primary border-b-2 w-full py-2 px-3 leading-tight max-w-sm text-content outline-none bg-secondary" required >
-        </div>
-        <div class="mb-4">
-            <label for="retype_password" class="block text-sm mb-2">Retype password</label>
-            <input type="password" name="retype_password" id="retype_password" class="border-b-primary border-b-2 w-full py-2 px-3 leading-tight max-w-sm text-content outline-none bg-secondary" required >
-        </div>
-        <input
-            type="submit"
-            value="Register"
-            class="bg-primary hover:cursor-pointer hover:bg-opacity-80 font-bold py-2 px-4 rounded"
-        >
-    </form>
-    <div id="error">
+  <form action="/register" method="POST">
+    <div class="mb-4">
+      <label for="username" class="block text-sm mb-2">Username</label>
+      <input
+        type="username"
+        name="username"
+        id="username"
+        class="border-b-primary border-b-2 w-full py-2 px-3 leading-tight max-w-sm text-content outline-none bg-secondary"
+        required
+      />
     </div>
+    <div class="mb-4">
+      <label for="password" class="block text-sm mb-2">Password</label>
+      <input
+        type="password"
+        name="password"
+        id="password"
+        class="border-b-primary border-b-2 w-full py-2 px-3 leading-tight max-w-sm text-content outline-none bg-secondary"
+        required
+      />
+    </div>
+    <div class="mb-4">
+      <label for="retype_password" class="block text-sm mb-2"
+        >Retype password</label
+      >
+      <input
+        type="password"
+        name="retype_password"
+        id="retype_password"
+        class="border-b-primary border-b-2 w-full py-2 px-3 leading-tight max-w-sm text-content outline-none bg-secondary"
+        required
+      />
+    </div>
+    <input
+      type="submit"
+      value="Register"
+      class="bg-primary hover:cursor-pointer hover:bg-opacity-80 font-bold py-2 px-4 rounded"
+    />
+  </form>
+  <div id="error" class="text-content">
+    <% if(error){ %> <%= error %> <%} %>
+  </div>
 </div>
 
 <script>
-    function validateRegisterForm(){
-        const username = document.getElementById('username').value;
-        const password = document.getElementById('password').value;
-        const retypePassword = document.getElementById('retype_password').value;
-        const error = document.getElementById('error');
-        if (username.length < 3) {
-            error.innerHTML = 'Username must be at least 3 characters long';
-            return false;
-        }
-        if (password.length < 3) {
-            error.innerHTML = 'Password must be at least 3 characters long';
-            return false;
-        }
-        if (password !== retypePassword) {
-            error.innerHTML = 'Passwords do not match';
-            return false;
-        }
-        return true;
+  function validateRegisterForm() {
+    const username = document.getElementById("username").value;
+    const password = document.getElementById("password").value;
+    const retypePassword = document.getElementById("retype_password").value;
+    const error = document.getElementById("error");
+    if (username.length < 3) {
+      error.innerHTML = "Username must be at least 3 characters long";
+      return false;
     }
-
+    if (password.length < 3) {
+      error.innerHTML = "Password must be at least 3 characters long";
+      return false;
+    }
+    if (password !== retypePassword) {
+      error.innerHTML = "Passwords do not match";
+      return false;
+    }
+    return true;
+  }
+  const form = document.querySelector("form");
+  form.addEventListener("submit", (e) => {
+    if (!validateRegisterForm()) {
+      e.preventDefault();
+    }
+  });
 </script>
