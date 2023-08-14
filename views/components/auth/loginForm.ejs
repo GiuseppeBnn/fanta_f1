@@ -15,4 +15,8 @@
         >
     </form>
     <p>Don't have an account? <a href="/register" class="underline">Register</a></p>
+    <br>
+    <div id="error" class="text-content">
+        <% if(typeof(error)!="undefined"){ %> <%= error %> <%} %>
+      </div>
 </div>

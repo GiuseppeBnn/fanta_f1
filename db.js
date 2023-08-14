@@ -230,7 +230,10 @@ async function queryUser(username) {
 
 async function verifyCredentials(username, password) {
   let res = await queryUser(username);
-  console.log(res);
+  console.log("trovato?",res);
+  if (res == null) {
+    return false;
+  }
   let isCorrect = await verifyHash(password, res.password);
   if (isCorrect) {
     return true;

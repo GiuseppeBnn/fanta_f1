@@ -1,38 +1,40 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Dashboard</title>
-    <link href="/styles.css" rel="stylesheet" type="text/css">
-</head>
-<body>
-    <!-- tailwind header-->
-    <div class="header bg-gray-800 py-4">
-        <h1>Dashboard</h1>
-        <a href="/logout">Logout</a>
+    <link href="/styles.css" rel="stylesheet" type="text/css" />
+  </head>
+  <body
+    class="bg-secondary text-content flex flex-col justify-between min-h-screen"
+  >
+    <%- include("components/layout/header") %>
+    <div>
+      <h1>Dashboard</h1>
+      <a href="/logout">Logout</a>
     </div>
     <% if(!hasTeam){ %>
-        <ul>
-            <li><a href="/team/create">Create Team</a></li>
-        </ul><br>            
+    <ul>
+      <li><a href="/team/create">Create Team</a></li>
+    </ul>
+    <br />
     <% }else{ %>
-        <h2><%= team.teamName  %></h2>
-        <h3>Members:</h3>
-        <ul>
-            <% for(let i = 0; i < members.length; i++){ %>
-                <li><%= members[i].givenName +" "+ members[i].familyName %> </li>
-            <% } %>
-        </ul>
+    <h2><%= team.teamName %></h2>
+    <h3>Members:</h3>
+    <ul>
+      <% for(let i = 0; i < members.length; i++){ %>
+      <li><%= members[i].givenName +" "+ members[i].familyName %></li>
+      <% } %>
+    </ul>
     <% } %>
     <h2>Global Top Teams</h2>
-        <ol>
-            <% for(let i = 0; i < teams.length; i++){ %>
-                <li><%= teams[i].teamName+" points:"+teams[i].score %></li>
-            <% } %>
-        </ol>
+    <ol>
+      <% for(let i = 0; i < teams.length; i++){ %>
+      <li><%= teams[i].teamName+" points:"+teams[i].score %></li>
+      <% } %>
+    </ol>
 
-    
-
-</body>
+    <%- include("components/layout/footer") %>
+  </body>
 </html>
