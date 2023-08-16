@@ -982,12 +982,11 @@ async function calculateTeamScore(pilots) {
   let score = 0;
 
   for (let i = 0; i < pilots.length; i++) {
-    let points = await getPilotPoints(pilots[i]);
+    let points = await getPilotTotalScore(pilots[i]);
     if (points) {
-      score += points;
+      score += parseInt(points);
     }
   }
-  console.log("calculated score:", score);
   return score;
 }
 
@@ -1143,9 +1142,14 @@ async function checkTeamLegality(pilots) {
 }
 
 async function insertTestStandings() {
-  for (let i = 0; i < 6; i++) {
-    insertTeam(i, "teamN." + i, "1,4", 383 + i);
-  }
+  
+  insertTeam(1, "teamN." + 1, "1,4", await calculateTeamScore(["1", "4"]));
+  insertTeam(2, "teamN." + 2, "16,4,2", await calculateTeamScore(["16", "4", "2"]));
+  insertTeam(3, "teamN." + 3, "1,2,3", await calculateTeamScore(["1", "2", "3"]));
+  insertTeam(4, "teamN." + 4, "2,3,4,55", await calculateTeamScore(["2", "3", "4","55"]));
+  
+
+  
 }
 
 async function getPilotsId() {
