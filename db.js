@@ -56,7 +56,7 @@ async function inizializePilotsTable() {
           console.error("Errore durante la creazione della tabella:", err);
           reject(err);
         } else {
-          console.log("Tabella dei piloti creata con successo!");
+          //console.log("Tabella dei piloti creata con successo!");
           resolve(true);
         }
       }
@@ -97,7 +97,7 @@ function insertPilots() {
           if (err) {
             console.error("Errore durante l'inserimento dei dati:", err);
           } else {
-            console.log("Dati inseriti con successo!");
+            //console.log("Dati inseriti con successo!");
           }
         }
       );
@@ -149,7 +149,7 @@ async function populatePointsTable() {
           if (err) {
             console.error("Errore durante l'inserimento dei dati:", err);
           } else {
-            console.log("Dati inseriti con successo!");
+            //console.log("Dati inseriti con successo!");
           }
         }
       );
@@ -172,7 +172,7 @@ function createUsersTable() {
       if (err) {
         console.error("Errore durante la creazione della tabella:", err);
       } else {
-        console.log("Tabella degli utenti creata con successo!");
+        //console.log("Tabella degli utenti creata con successo!");
         insertAdmin();
         insertTestAccount();
       }
@@ -197,7 +197,7 @@ function createUsersTable() {
           if (err) {
             console.error("Errore durante l'inserimento dei dati:", err);
           } else {
-            console.log("Dati inseriti con successo!");
+            //console.log("Dati inseriti con successo!");
           }
         }
       );
@@ -219,7 +219,7 @@ async function insertUser(username, password) {  //ritorna false se già present
             console.error("Errore durante l'inserimento dei dati:", err);
             resolve(false);
           } else {
-            console.log("Dati inseriti con successo!");
+            //console.log("Dati inseriti con successo!");
             resolve(true);
           }
         }
@@ -255,7 +255,6 @@ async function queryUser(username) {
 
 async function verifyCredentials(username, password) {
   let res = await queryUser(username);
-  console.log("trovato?", res);
   if (res == null) {
     return false;
   }
@@ -364,7 +363,7 @@ async function insertCoins() {
           if (err) {
             console.error("Errore durante l'inserimento dei dati:", err);
           } else {
-            console.log("Punti inseriti con successo!");
+            //console.log("Punti inseriti con successo!");
           }
         }
       );
@@ -385,7 +384,7 @@ async function updateCoins(newScore) {    //dove newScore è un oggetto con chia
             console.error("Errore durante l'aggiornamento dei dati:", err);
             reject(err);
           } else {
-            console.log("Punti aggiornati con successo!");
+            //console.log("Punti aggiornati con successo!");
           }
         }
       );
@@ -411,7 +410,7 @@ async function createTeamTable() {
           console.error("Errore durante la creazione della tabella:", err);
           reject(err);
         } else {
-          console.log("Tabella dei team creata con successo!");
+          //console.log("Tabella dei team creata con successo!");
           resolve(true);
         }
       }
@@ -433,7 +432,7 @@ async function insertTeam(userId, teamName, pilots, score) {
           console.error("Errore durante l'inserimento del team:", err);
           reject(err);
         } else {
-          console.log("Team inserito con successo!");
+          //console.log("Team inserito con successo!");
           resolve(true);
         }
       }
@@ -456,7 +455,7 @@ async function getTeam(userId) {
           reject(err);
         } else {
           if (result.length > 0) {
-            console.log("Team trovato con successo!");
+            //console.log("Team trovato con successo!");
             resolve(result[0]);
           } else {
             console.log("Team non presente nel database!");
@@ -479,7 +478,7 @@ async function getTeams() {
           reject(err);
         } else {
           if (result.length > 0) {
-            console.log("Team trovati con successo!");
+            //console.log("Team trovati con successo!");
             resolve(result);
           } else {
             console.log("Team non presenti nel database!");
@@ -506,7 +505,7 @@ async function createBonusTable() {
           console.error("Errore durante la creazione della tabella bonus:", err);
           reject(err);
         } else {
-          console.log("Tabella dei bonus creata con successo!");
+          //console.log("Tabella dei bonus creata con successo!");
           resolve(true);
         }
       }
@@ -581,7 +580,7 @@ async function updateBonusTable(lastRoundResult) {
         if (err) {
           console.error("Errore durante l'aggiornamento del punteggio:", err);
         } else {
-          console.log("Punteggio aggiornato con successo!");
+          //console.log("Punteggio aggiornato con successo!");
         }
       }
     );
@@ -622,7 +621,7 @@ async function updateScore(lastRoundResult) {
         if (err) {
           console.error("Errore durante l'aggiornamento del punteggio:", err);
         } else {
-          console.log("Punteggio aggiornato con successo!");
+          //console.log("Punteggio aggiornato con successo!");
         }
       }
     );
@@ -684,7 +683,6 @@ async function getPilotScore(pilotId) {
           reject(err);
         } else {
           if (result.length > 0) {
-            console.log("Punteggio trovato con successo!");
             resolve(result[0].score);
           } else {
             console.log("Punteggio non presente nel database!");
@@ -714,11 +712,9 @@ async function getPilotTotalScore(pilotId) {
             //console.log("Punteggio trovato con successo!");
             let totalScore = 0;
             let score = result[0].score.split(";");
-            console.log("score:", score)
             for (let i = 0; i < score.length; i++) {
               if (score[i] != "") {
                 let roundScore = score[i].split(",");
-                console.log("roundScore", roundScore);
                 totalScore += parseInt(roundScore[0]) + parseInt(roundScore[1]) + parseInt(roundScore[2]);
               }
             }
@@ -770,7 +766,6 @@ async function getTeamsId() {
           reject(err);
         } else {
           if (result.length > 0) {
-            console.log("Team trovati con successo!");
             resolve(result);
           } else {
             console.log("Team non presenti nel database!");
@@ -820,7 +815,6 @@ async function getBonusTable() {
           reject(err);
         } else {
           if (result.length > 0) {
-            console.log("Bonus trovati con successo!");
             resolve(result);
           } else {
             console.log("Bonus non presenti nel database!");
@@ -846,7 +840,6 @@ async function hasTeam(userId) {
           reject(err);
         } else {
           if (result.length > 0) {
-            console.log("Team trovato con successo!");
             resolve(true);
           } else {
             console.log("Team non presente nel database!");
@@ -872,7 +865,6 @@ async function getUserId(username) {
           reject(err);
         } else {
           if (result.length > 0) {
-            console.log("Utente trovato con successo!");
             resolve(result[0].userId);
           } else {
             console.log("Utente non presente nel database!");
@@ -907,7 +899,6 @@ async function newSeasonCleanup() { // cancella e ripulisce tutte le table del d
           console.error("Errore durante la cancellazione delle tabelle:", err);
           reject(err);
         } else {
-          console.log("Tabelle cancellate con successo!");
           resolve(true);
         }
       }
@@ -928,7 +919,6 @@ async function getCoins() {
           reject(err);
         } else {
           if (result.length > 0) {
-            console.log("Coins trovate con successo!");
             resolve(result);
           } else {
             console.log("Coins non presenti nel database!");
@@ -951,7 +941,6 @@ async function getPilotsTable() {
           reject(err);
         } else {
           if (result.length > 0) {
-            console.log("Piloti trovati con successo!");
             resolve(result);
           } else {
             console.log("Piloti non presenti nel database!");
@@ -1004,7 +993,6 @@ async function getPilotPoints(pilotId) {
           reject(err);
         } else {
           if (result.length > 0) {
-            console.log("Punti del pilota trovati con successo!");
             resolve(result[0].points);
           } else {
             console.log("Punti del pilota non presenti nel database!");
@@ -1067,7 +1055,6 @@ async function getPilotBonus(pilotId) {
           reject(err);
         } else {
           if (result.length > 0) {
-            console.log("Bonus del pilota trovati con successo!");
             resolve(result[0]);
           } else {
             console.log("Bonus del pilota non presenti nel database!");
@@ -1096,7 +1083,6 @@ async function getPilotInfo(id) {
             reject(err);
           } else {
             if (result.length > 0) {
-              console.log("Punti del pilota trovati con successo!", result[0]);
               resolve(result[0]);
             } else {
               console.log("Punti del pilota non presenti nel database!");
@@ -1119,7 +1105,6 @@ async function getPilotInfo(id) {
         pilots[i]["points"] = pilotPoints.points;
         pilots[i]["classification"] = pilotPoints.position;
         pilots[i]["bonus"] = pilotBonus;
-        console.log("Pilota trovato con successo!      ." + pilots[i].name + "." + pilots[i].surname + "." + pilots[i].points + "." + pilots[i].classification + "." + pilots[i].bonus);
         resolve(pilots[i]);
         return;
       }
@@ -1147,7 +1132,7 @@ async function insertTestStandings() {
   insertTeam(2, "teamN." + 2, "16,4,2", await calculateTeamScore(["16", "4", "2"]));
   insertTeam(3, "teamN." + 3, "1,2,3", await calculateTeamScore(["1", "2", "3"]));
   insertTeam(4, "teamN." + 4, "2,3,4,55", await calculateTeamScore(["2", "3", "4","55"]));
-  
+
 
   
 }
