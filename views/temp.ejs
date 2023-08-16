@@ -1,0 +1,20 @@
+<% if(!hasTeam){ %>
+<ul>
+  <li><a href="/team/create">Create Team</a></li>
+</ul>
+<br />
+<% }else{ %>
+<h2><%= team.teamName %></h2>
+<h3>Members:</h3>
+<ul>
+  <% for(let i = 0; i < members.length; i++){ %>
+  <li><%= members[i].givenName +" "+ members[i].familyName %></li>
+  <% } %>
+</ul>
+<% } %>
+<h2>Global Top Teams</h2>
+<ol>
+  <% for(let i = 0; i < teams.length; i++){ %>
+  <li><%= teams[i].teamName+" points:"+teams[i].score %></li>
+  <% } %>
+</ol>

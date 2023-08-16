@@ -10,27 +10,54 @@
     class="bg-secondary text-content flex flex-col justify-between min-h-screen"
   >
     <%- include("components/layout/header") %>
-    <% if(!hasTeam){ %>
-    <ul>
-      <li><a href="/team/create">Create Team</a></li>
-    </ul>
-    <br />
-    <% }else{ %>
-    <h2><%= team.teamName %></h2>
-    <h3>Members:</h3>
-    <ul>
-      <% for(let i = 0; i < members.length; i++){ %>
-      <li><%= members[i].givenName +" "+ members[i].familyName %></li>
-      <% } %>
-    </ul>
-    <% } %>
-    <h2>Global Top Teams</h2>
-    <ol>
-      <% for(let i = 0; i < teams.length; i++){ %>
-      <li><%= teams[i].teamName+" points:"+teams[i].score %></li>
-      <% } %>
-    </ol>
+    <div class="flex flex-col md:flex-row justify-around items-baseline p-8">
+      <%if(teams.length > 0){ %>
+      <div id="standings" class="md:max-h-96 my-4 rounded-md w-full md:w-5/12">
+        <p class="text-lg font-medium">Global Top 5 Teams:</p>
+        <% for(let i = 0; i < teams.length; i++){ %>
+        <div
+          id="<%=teams[i].teamId %>"
+          class="flex justify-between w-full bg-secondary-focus shadow-sm p-2 text-lg font-bold border-2 border-secondary-focus"
+        >
+          <p><%= teams[i].teamName %></p>
+          <p class="text-sm"><%= teams[i].score %> points</p>
+        </div>
+        <% if(i >=5){break;} %> <%} %>
+      </div>
+      <%}else{ %>
+      <div id="empty" class="md:max-h-96 my-4 rounded-md w-full md:w-5/12">
+        <div
+          class="w-full bg-secondary-focus shadow-sm p-2 text-lg font-bold border-2 border-secondary-focus"
+        >
+          No teams yet!
+        </div>
+      </div>
+      <%} %> <% if(!hasTeam){ %>
+      <div class="md:flex md:flex-col md:justify-center w-full md:w-5/12">
+        <a href="/team/create" class="mx-auto">
+          <div
+            class="text-center md:w-fit bg-primary hover:cursor-pointer hover:bg-opacity-80 font-bold py-2 px-4 rounded"
+          >
+            Create Team
+          </div>
+        </a>
+      </div>
+      <% }else{ %>
+      <div class="max-h-96 my-8 rounded-md md:w-5/12 w-full" id="personalTeam">
+        <p class="text-lg font-medium"><%= team.teamName %>:</p>
+        <% for(let i = 0; i < members.length; i++){ %>
+        <div
+          id="<%= members[i].id %>"
+          class="flex justify-between relative bg-secondary-focus shadow-sm p-4 text-lg font-bold border-2 border-secondary-focus"
+        >
+          <p><%= members[i].givenName +" "+ members[i].familyName %></p>
+          <p class="text-sm"><% console.log(members[i]); %> points</p>
+        </div>
+        <% } %>
+      </div>
 
+      <%} %>
+    </div>
     <%- include("components/layout/footer") %>
   </body>
 </html>
