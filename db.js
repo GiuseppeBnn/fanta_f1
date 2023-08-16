@@ -4,6 +4,7 @@ const argon2 = require("argon2");
 const cron = require("node-cron");
 
 const pool = createPool();
+const maxCoinBudget = 2000;
 
 let lastRoundNum;
 getLastRoundNumber().then((roundNum) => {
@@ -154,9 +155,14 @@ function createUsersTable() {
       } else {
         console.log("Tabella degli utenti creata con successo!");
         insertAdmin();
+        insertTestAccount();
       }
     }
   );
+  function insertTestAccount() {
+    //insert if not exist test user
+    insertUser("test","test");
+  }
 
   function insertAdmin() {
     //insert if not exist admin user
@@ -230,7 +236,7 @@ async function queryUser(username) {
 
 async function verifyCredentials(username, password) {
   let res = await queryUser(username);
-  console.log("trovato?",res);
+  console.log("trovato?", res);
   if (res == null) {
     return false;
   }
@@ -1031,7 +1037,21 @@ async function getPilotInfo(id) {
   });
 }
 
+async function checkTeamLegality(pilots) {
+  let coins = 0;
+  let pilotsValues = await getCoins();
+  for (let i = 0; i < pilots.length; i++) {
+    for (let j = 0; j < pilotsValues.length; j++) {
+      if (pilotsValues[j].driverId == pilots[i]) {
+        coins += parseInt(pilotsValues[j].coins);
+      }
+    }
+  }
+  return coins <= maxCoinBudget;
+}
+
+
 
 
 //esporta modulo
-module.exports = { getPilotInfo, getMembersInfo, calculateTeamScore, getPilotsValues, getUserId, hasTeam, retrieveAllRoundResults, getBonusTable, weeklyUpdate, updateRoundTotalScore, getBonusTable, getTeams, getTeam, inizializeDatabase, insertUser, verifyAdminAccess, verifyCredentials, queryUser, getPilots, updateScore, insertTeam, getTeams };
+module.exports = { checkTeamLegality, maxCoinBudget, getPilotInfo, getMembersInfo, calculateTeamScore, getPilotsValues, getUserId, hasTeam, retrieveAllRoundResults, getBonusTable, weeklyUpdate, updateRoundTotalScore, getBonusTable, getTeams, getTeam, inizializeDatabase, insertUser, verifyAdminAccess, verifyCredentials, queryUser, getPilots, updateScore, insertTeam, getTeams };

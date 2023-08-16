@@ -86,7 +86,7 @@
           resetError(pilotId);
           if(!isPurchaseable(pilotVal) && !pilotCheckbox.checked){
             console.log("non si puo");
-            setError(pilotId);
+            setError(pilotId);    //commentare per testing controlli validità in backend
             return;
           }
 
@@ -128,7 +128,7 @@
         }
 
         const form = document.querySelector("form");
-        form.addEventListener("submit", checkBudget);
+        form.addEventListener("submit", checkBudget);  //commentare per testing backend
 
         function checkBudget(event) {
           let coinsUsed = calculateSelected();

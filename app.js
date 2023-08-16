@@ -160,7 +160,7 @@ app.get("/team/create", requireAuth, async (req, res) => {
         res.redirect("/dashboard");
     }
     else {
-        let maxCoinBudget = 2000;
+        let maxCoinBudget = db.maxCoinBudget;
         let pilots = await db.getPilotsValues();
         res.render("create_team", { pilots: pilots, maxCoinBudget: maxCoinBudget, isAuth: true });
     }
@@ -170,13 +170,14 @@ app.post("/team/create", requireAuth, async (req, res) => {
     let userId = req.session.userId;
     let hasTeam = await db.hasTeam(userId);
     if (!hasTeam) {
+        let check=await db.checkTeamLegality(req.body.pilots);
+        if(!check){
+            return res.redirect("/team/create");
+        }
         let teamName = req.body.teamName;
         let pilots = req.body.pilots;
-        console.log("pilots:", pilots);
-        console.log("teamName:", teamName);
         let score = await db.calculateTeamScore(pilots);
         pilots = pilots.join(",");
-        console.log("pilotsString :", pilots);
         await db.insertTeam(userId, teamName, pilots, score);
     }
     res.redirect("/dashboard");
