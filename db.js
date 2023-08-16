@@ -628,7 +628,7 @@ async function updateScore(lastRoundResult) {
     );
   }
 }
-async function updatePilotsScore(lastRaceScore, lastRoundResult ) {
+async function updatePilotsScore(lastRaceScore, lastRoundResult) {
   let positionGainedBonus = calculatePositionGainedBonus(lastRoundResult);
   let fastestLapBonus = calculateFastestLapBonus(lastRoundResult);
   return new Promise(async (resolve, reject) => {
@@ -636,7 +636,13 @@ async function updatePilotsScore(lastRaceScore, lastRoundResult ) {
     for (let i = 0; i < pilotsId.length; i++) {
       let pilotId = pilotsId[i].id;
       let lastPilotScore = await getPilotScore(pilotId);
-      let pilotRoundScore = lastRaceScore[pilotId] + "," + positionGainedBonus[pilotId] + ","+ fastestLapBonus[pilotId]+";";
+      let pilotRoundScore;
+      if (typeof (lastRaceScore[pilotId]) != "undefined") {
+        pilotRoundScore = lastRaceScore[pilotId] + "," + positionGainedBonus[pilotId] + "," + fastestLapBonus[pilotId] + ";";
+      }
+      else {
+        pilotRoundScore = "0,0,0;";
+      }
       if (lastPilotScore != null) {
         console.log(lastPilotScore);
         pilotRoundScore = lastPilotScore + pilotRoundScore;
@@ -689,6 +695,46 @@ async function getPilotScore(pilotId) {
     );
   });
 }
+
+async function getPilotTotalScore(pilotId) {
+  return new Promise((resolve, reject) => {
+    pool.execute(
+      `
+      SELECT score FROM pilots
+      WHERE id = ?
+
+        `,
+      [pilotId],
+      (err, result) => {
+        if (err) {
+          console.error("Errore durante la ricerca del punteggio:", err);
+          reject(err);
+        } else {
+          if (result.length > 0) {
+            //console.log("Punteggio trovato con successo!");
+            let totalScore = 0;
+            let score = result[0].score.split(";");
+            console.log("score:", score)
+            for (let i = 0; i < score.length; i++) {
+              if (score[i] != "") {
+                let roundScore = score[i].split(",");
+                console.log("roundScore", roundScore);
+                totalScore += parseInt(roundScore[0]) + parseInt(roundScore[1]) + parseInt(roundScore[2]);
+              }
+            }
+            resolve(totalScore);
+          } else {
+            console.log("Punteggio non presente nel database!");
+            resolve(false);
+          }
+        }
+      }
+    );
+  });
+}
+
+
+
 async function updateRoundTotalScore(roundNumber) {
   let roundResult = await getRoundResult(roundNumber);
   await updateBonusTable(roundResult);
@@ -1126,8 +1172,43 @@ async function getPilotsId() {
   });
 }
 
+async function getTeamsSinglePilotsPoints(teamId) {
+  return new Promise((resolve, reject) => {
+    pool.execute(
+      `
+      SELECT idPilots FROM teams
+      WHERE teamId = ?
+        `,
+      [teamId],
+      async (err, result) => {
+        if (err) {
+          console.error("Errore durante la ricerca dei membri del team:", err);
+          reject(err);
+        } else {
+          if (result.length > 0) {
+            let membersArray = result[0].idPilots.split(",");
+            let membersData = {};
+            for (let i = 0; i < membersArray.length; i++) {
+              membersData[membersArray[i]] = {};
+              console.log("membersArray[i]:", membersArray[i]);
+              membersData[membersArray[i]] = await getPilotTotalScore(membersArray[i]);
+              console.log("membersData[i]:", membersData[membersArray[i]]);
+            }
+            resolve(membersData);
+          } else {
+            console.log("Membri del team non presenti nel database!");
+            resolve(false);
+          }
+        }
+
+      }
+    );
+
+  });
+}
+
 
 
 
 //esporta modulo
-module.exports = { checkTeamLegality, maxCoinBudget, getPilotInfo, getMembersInfo, calculateTeamScore, getPilotsValues, getUserId, hasTeam, retrieveAllRoundResults, getBonusTable, weeklyUpdate, updateRoundTotalScore, getBonusTable, getTeams, getTeam, inizializeDatabase, insertUser, verifyAdminAccess, verifyCredentials, queryUser, getPilots, updateScore, insertTeam, getTeams };
+module.exports = { getTeamsSinglePilotsPoints, getPilotTotalScore, getPilotScore, checkTeamLegality, maxCoinBudget, getPilotInfo, getMembersInfo, calculateTeamScore, getPilotsValues, getUserId, hasTeam, retrieveAllRoundResults, getBonusTable, weeklyUpdate, updateRoundTotalScore, getBonusTable, getTeams, getTeam, inizializeDatabase, insertUser, verifyAdminAccess, verifyCredentials, queryUser, getPilots, updateScore, insertTeam, getTeams };

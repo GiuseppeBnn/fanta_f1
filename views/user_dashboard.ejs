@@ -44,14 +44,19 @@
       </div>
       <% }else{ %>
       <div class="max-h-96 my-8 rounded-md md:w-5/12 w-full" id="personalTeam">
-        <p class="text-lg font-medium"><%= team.teamName %>:</p>
+        <div class="flex justify-between">
+          <p class="text-lg font-medium"><%= team.teamName %>:</p>
+          <p class="text-sm font-medium mb-0"><%= team.score %> total points</p>
+        </div>
         <% for(let i = 0; i < members.length; i++){ %>
         <div
           id="<%= members[i].id %>"
           class="flex justify-between relative bg-secondary-focus shadow-sm p-4 text-lg font-bold border-2 border-secondary-focus"
         >
           <p><%= members[i].givenName +" "+ members[i].familyName %></p>
-          <p class="text-sm"><% console.log(members[i]); %> points</p>
+          <p class="text-sm">
+            <%= teamPilotsScore[members[i].permanentNumber] %> points
+          </p>
         </div>
         <% } %>
       </div>

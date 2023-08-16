@@ -93,11 +93,13 @@ app.get('/dashboard', requireAuth, async (req, res) => {
     let isAuth = true;
     let userId = req.session.userId;
     let hasTeam = await db.hasTeam(userId);
+    let teamPilotsScore = await db.getTeamsSinglePilotsPoints(userId);
+    console.log("teamPilotsScore:///////7", teamPilotsScore )
     if (hasTeam) {
         let team = await db.getTeam(userId);
         let members = await db.getMembersInfo(userId);
         let teams = await db.getTeams();
-        res.render('user_dashboard', { team: team, teams: teams, hasTeam: hasTeam, members: members, isAuth: isAuth });
+        res.render('user_dashboard', { team: team, teams: teams, hasTeam: hasTeam, members: members, isAuth: isAuth, teamPilotsScore: teamPilotsScore });
     }
     else {
         let teams = await db.getTeams();
