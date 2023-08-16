@@ -162,7 +162,7 @@ app.get("/team/create", requireAuth, async (req, res) => {
     else {
         let maxCoinBudget = 2000;
         let pilots = await db.getPilotsValues();
-        res.render("create_team", { pilots: pilots, maxCoinBudget: maxCoinBudget });
+        res.render("create_team", { pilots: pilots, maxCoinBudget: maxCoinBudget, isAuth: true });
     }
 });
 

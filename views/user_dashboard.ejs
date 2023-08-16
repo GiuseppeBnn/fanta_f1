@@ -10,10 +10,6 @@
     class="bg-secondary text-content flex flex-col justify-between min-h-screen"
   >
     <%- include("components/layout/header") %>
-    <div>
-      <h1>Dashboard</h1>
-      <a href="/logout">Logout</a>
-    </div>
     <% if(!hasTeam){ %>
     <ul>
       <li><a href="/team/create">Create Team</a></li>

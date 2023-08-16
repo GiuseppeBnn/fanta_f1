@@ -4,78 +4,167 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>New Team</title>
+    <link href="/styles.css" rel="stylesheet" type="text/css" />
+    <link
+      href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css"
+      rel="stylesheet"
+    />
   </head>
-  <body>
-    <h1>Create a new Team</h1>
-    <h2 id="maxBudget">Maximum value: <%= maxCoinBudget %></h2>
-    <div id="coinsBudget"></div>
-    <div id="coinCounter"></div>
-    <form action="/team/create" method="POST">
-      <label for="teamName">Team Name</label>
-      <input type="text" name="teamName" id="teamName" required />
-      <label for="pilots">Pilots</label>
-      <select name="pilots" id="pilots" multiple="true">
-        <% for(let i = 0; i < pilots.length; i++){ %>
-        <option value="<%= pilots[i].id %>">
-          <%= pilots[i].name %> <%= pilots[i].surname %> <%= pilots[i].value %>
-          coins
-        </option>
-        <% } %>
-      </select>
-      <input type="submit" value="Create" />
-    </form>
+  <body
+    class="bg-secondary text-content flex flex-col justify-between min-h-screen"
+  >
+    <%- include("components/layout/header") %>
+    <div class="container mx-auto p-4">
+      <h1 class="text-center text-4xl">Create a new Team</h1>
+      <h2 id="maxBudget" class="hidden">Maximum value: <%= maxCoinBudget %></h2>
+      <div id="coinsUsed">Coins used: 0</div>
 
+      <form action="/team/create" method="POST">
+        <div class="mb-4">
+          <label for="teamName" class="block text-sm mb-2">Team name</label>
+          <input
+            type="text"
+            name="teamName"
+            id="teamName"
+            class="border-b-primary border-b-2 w-full py-2 px-3 leading-tight max-w-sm text-content outline-none bg-secondary"
+            required
+          />
+        </div>
+
+        <div class="max-h-96 overflow-scroll my-8 rounded-md">
+          <% for(let i = 0; i < pilots.length; i++){ %>
+          <input
+            type="checkbox"
+            name="pilots"
+            id="checkbox_<%= pilots[i].id %>"
+            value="<%= pilots[i].id %>"
+            class="hidden"
+            data-val="<%= pilots[i].value%>"
+          />
+          <div
+            id="<%= pilots[i].id %>"
+            class="relative bg-secondary-focus shadow-sm p-4 text-lg font-bold border-2 border-secondary-focus"
+          >
+            <div>
+              <%= pilots[i].name %> <%= pilots[i].surname %>
+              <p class="text-sm font-medium">Team</p>
+              <p class="text-sm font-semibold text-primary">
+                <%= pilots[i].value %> coins
+              </p>
+            </div>
+            <div class="absolute top-2 right-4 cursor-pointer">
+              <i
+                class="bx bxs-plus-square pilot-purchase text-2xl text-primary hover:text-primary-focus"
+                id="purchase-<%= pilots[i].id %>"
+              ></i>
+            </div>
+            <p class="text-sm text-right font-normal h-4 text-primary" id="error-<%=pilots[i].id %>"></p>
+          </div>
+          <% } %>
+        </div>
+        <input
+          type="submit"
+          value="Create"
+          class="bg-primary hover:cursor-pointer hover:bg-opacity-80 font-bold py-2 px-4 rounded"
+        />
+      </form>
+    </div>
+
+    <%- include("components/layout/footer") %>
     <script>
       document.addEventListener("DOMContentLoaded", function () {
+        document.addEventListener("click", (e) => {
+          if (!e.target.classList.contains("pilot-purchase")) {
+            return;
+          }
+
+          let pilotId = e.target.id;
+          pilotId = pilotId.split("-")[1];
+
+          const pilotCheckbox = document.getElementById("checkbox_" + pilotId);
+          const pilotVal=pilotCheckbox.dataset.val;
+          resetError(pilotId);
+          if(!isPurchaseable(pilotVal) && !pilotCheckbox.checked){
+            console.log("non si puo");
+            setError(pilotId);
+            return;
+          }
+
+
+          pilotCheckbox.checked = !pilotCheckbox.checked;
+          event.target.classList.toggle("bxs-plus-square");
+          event.target.classList.toggle("bxs-minus-square");
+          printCoinsUsed();
+        });
+
+        const pilotsSelect = document.querySelectorAll('[id^="checkbox_"]');
         const coinCounter = document.getElementById("coinCounter");
-        const pilotsSelect = document.getElementById("pilots");
-        const coinsBudget = document.getElementById("coinsBudget");
-        const coinsMaxBudget = document.getElementById("maxBudget").innerHTML.match(/\d+/)[0];
+        const coinsUsed = document.getElementById("coinsUsed");
+        
+
+        let totalCost=0;
+        const coinsMaxBudget = document
+          .getElementById("maxBudget")
+          .innerHTML.match(/\d+/)[0];
+        console.log("coinsMaxBudget", coinsMaxBudget);
+
+        function calculateSelected() {
+          const selectedOptions = Array.from(pilotsSelect).filter(
+            (option) => option.checked
+          );
+
+          selectedOptions.map((option) => option.dataset.val);
+          totalCost = 0;
+          selectedOptions.forEach((option) => {
+            totalCost += parseInt(option.dataset.val);
+          });
+          return totalCost;
+        }
+
+        
+        function printCoinsUsed() {
+          const used = calculateSelected();
+          coinsUsed.innerHTML = `Coins used: ${used}`;
+        }
+
         const form = document.querySelector("form");
         form.addEventListener("submit", checkBudget);
 
-        // Funzione per calcolare i coins utilizzati dai piloti selezionati
-        function calculateCoinsUsed() {
-          const selectedOptions = Array.from(pilotsSelect.selectedOptions);
-          const coinsUsed = selectedOptions.reduce((totalCoins, option) => {
-            return totalCoins + parseInt(option.dataset.value);
-          }, 0);
-          return coinsUsed;
-        }
-
         function checkBudget(event) {
-          let coinsUsed = calculateCoinsUsed();
-          console.log(coinsMaxBudget);
+          let coinsUsed = calculateSelected();
+          console.log("maxBudget", coinsMaxBudget);
           if (coinsUsed > coinsMaxBudget) {
+            // segnalare errore in qualche modo
             alert("You have exceeded the maximum budget");
             event = event.preventDefault();
           } else {
             alert("Team created successfully");
           }
         }
-        function remainingCoins(coinsMaxBudget) {
-          const coinsUsed = calculateCoinsUsed();
-          const remainingCoins = coinsMaxBudget - coinsUsed;
-          return remainingCoins;
+
+        function isPurchaseable(price){
+          const temp=parseInt(totalCost)+parseInt(price);
+          if(temp<=coinsMaxBudget){
+            return true;
+          }
+          return false;
         }
 
-        // Funzione per aggiornare il contatore dei coins utilizzati
-        function updateCoinCounter() {
-          const coinsUsed = calculateCoinsUsed();
-          coinCounter.textContent = `Coins used: ${coinsUsed}`;
-          let rem = remainingCoins(coinsMaxBudget);
-          coinsBudget.innerHTML = `Remaining budget: ${rem}`;
+
+        function setError(pilotId){
+          const errorNode= document.getElementById("error-"+pilotId);
+          console.log("errorNode", errorNode);
+          errorNode.innerHTML="You have exceeded the maximum budget ("+coinsMaxBudget+")";
+          let timeout= setTimeout(function(){resetError(pilotId);}, 3000);
+          
+        }
+        function resetError(pilotId){
+          console.log("reset", pilotId);
+          const errorN= document.getElementById("error-"+pilotId);
+          console.log("reset", errorN);
+          errorN.innerHTML="";
         }
 
-        // Aggiungi un listener all'input di coins budget e al select dei piloti
-        pilotsSelect.addEventListener("change", updateCoinCounter);
-
-        // Aggiungi un attributo "data-value" a ciascuna opzione per memorizzare il valore dei coins del pilota
-        const options = pilotsSelect.querySelectorAll("option");
-        options.forEach((option) => {
-          const value = parseInt(option.textContent.match(/\d+/)[0]);
-          option.dataset.value = value;
-        });
       });
     </script>
   </body>
