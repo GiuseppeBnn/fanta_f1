@@ -1,3 +1,28 @@
 @import 'tailwindcss/base';
 @import 'tailwindcss/components';
 @import 'tailwindcss/utilities';
+
+@font-face {
+    font-family: "F1Black";
+    src: url("../fonts/Formula1-Black.ttf") format("truetype");
+    font-weight: normal;
+    font-style: normal;
+}
+@font-face {
+    font-family: "F1Bold";
+    src: url("../fonts/Formula1-Bold.ttf") format("truetype"); 
+    font-weight: normal;
+    font-style: normal;
+}
+@font-face {
+    font-family: "F1Regular";
+    src: url("../fonts/Formula1-Regular.ttf") format("truetype");
+    font-weight: normal;
+    font-style: normal;
+}
+@font-face {
+    font-family: "F1Wide";
+    src: url("../fonts/Formula1-Wide.ttf") format("truetype");
+    font-weight: normal;
+    font-style: normal;
+}

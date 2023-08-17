@@ -50,15 +50,18 @@
         </div>
         <% for(let i = 0; i < members.length; i++){ %>
         <a href="/pilot/<%= members[i].permanentNumber %>">
-        <div
-          id="<%= members[i].permanentNumber %>"
-          class="flex justify-between relative bg-secondary-focus shadow-sm p-4 text-lg font-bold border-2 border-secondary-focus"
-        >
-          <p><%= members[i].givenName +" "+ members[i].familyName %></p>
-          <p class="text-sm">
-            <%= teamPilotsScore[members[i].permanentNumber] %> points
-          </p>
-        </div>
+          <div
+            id="<%= members[i].permanentNumber %>"
+            class="flex justify-between relative bg-secondary-focus shadow-sm p-4 text-lg font-bold border-2 border-secondary-focus"
+          >
+            <div class="flex justify-between items-baseline">
+              <p class="font-f1Regular text-sm"><%= members[i].givenName%></p>
+              <p class="font-f1Bold"><%= members[i].familyName %></p>
+            </div>
+            <p class="text-sm">
+              <%= teamPilotsScore[members[i].permanentNumber] %> points
+            </p>
+          </div>
         </a>
         <% } %>
       </div>
