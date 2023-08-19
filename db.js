@@ -35,7 +35,7 @@ const inizializeDatabase = async () => {
   await createTeamTable();
   await createBonusTable();
   await retrieveAllRoundResults();
-  await insertTestStandings();
+  //await insertTestStandings();
 
 
 };
