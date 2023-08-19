@@ -149,6 +149,11 @@ app.post('/register', async (req, res) => {
 });
 
 app.get("/register", (req, res) => {
+    
+    if (req.session && req.session.userId) {
+        return res.redirect("/dashboard");
+    }
+
     let isAuth = false;
     res.render("register", { isAuth: isAuth });
 });
