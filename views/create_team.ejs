@@ -11,7 +11,7 @@
     />
   </head>
   <body
-    class="bg-secondary text-content flex flex-col justify-between min-h-screen"
+    class="bg-content text-secondary font-f1Regular flex flex-col justify-between min-h-screen"
   >
     <%- include("components/layout/header") %>
     <div class="container mx-auto p-4">
@@ -26,12 +26,12 @@
             type="text"
             name="teamName"
             id="teamName"
-            class="border-b-primary border-b-2 w-full py-2 px-3 leading-tight max-w-sm text-content outline-none bg-secondary"
+            class="border-b-primary border-b-2 w-full py-2 px-3 leading-tight max-w-sm text-secondary outline-none"
             required
           />
         </div>
 
-        <div class="max-h-96 overflow-scroll my-8 rounded-md">
+        <div class="max-h-96 overflow-y-scroll my-8 rounded-md">
           <% for(let i = 0; i < pilots.length; i++){ %>
           <input
             type="checkbox"
@@ -43,7 +43,7 @@
           />
           <div
             id="<%= pilots[i].id %>"
-            class="relative bg-secondary-focus shadow-sm p-4 text-lg font-bold border-2 border-secondary-focus"
+            class="relative shadow-sm p-4 text-lg font-bold border-2 border-content"
           >
             <div>
               <%= pilots[i].name %> <%= pilots[i].surname %>
@@ -65,7 +65,7 @@
         <input
           type="submit"
           value="Create"
-          class="bg-primary hover:cursor-pointer hover:bg-opacity-80 font-bold py-2 px-4 rounded"
+          class="bg-primary text-content hover:cursor-pointer hover: font-bold py-2 px-6 rounded border-primary border-2 hover:bg-content hover:text-secondary"
         />
       </form>
     </div>

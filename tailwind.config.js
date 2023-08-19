@@ -19,6 +19,7 @@ module.exports = {
       "content-dark": "#1e1e1e",
       "primary-focus": "#9B0400",
       "secondary-focus": "#343448",
+      "base-100": "#EDEDED",
     }
   },
   plugins: [],

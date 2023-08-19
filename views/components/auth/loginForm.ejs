@@ -2,21 +2,21 @@
     <form action="/login" method="POST">
         <div class="mb-4">
             <label for="username" class="block text-sm mb-2">Username</label>
-            <input type="username" name="username" id="username" class="border-b-primary border-b-2 w-full py-2 px-3 leading-tight max-w-sm text-content outline-none bg-secondary" required>
+            <input type="username" name="username" id="username" class="border-b-primary border-b-2 w-full py-2 px-3 leading-tight max-w-sm text-secondary outline-none bg-content" required>
         </div>
         <div class="mb-4">
             <label for="password" class="block text-sm mb-2">Password</label>
-            <input type="password" name="password" id="password" class="border-b-primary border-b-2 w-full py-2 px-3 leading-tight max-w-sm text-content outline-none bg-secondary" required >
+            <input type="password" name="password" id="password" class="border-b-primary border-b-2 w-full py-2 px-3 leading-tight max-w-sm text-secondary outline-none bg-content" required >
         </div>
         <input
             type="submit"
             value="Login"
-            class="bg-primary hover:cursor-pointer hover:bg-opacity-80 font-bold py-2 px-4 rounded"
+            class="bg-primary text-content hover:cursor-pointer hover: font-bold py-2 px-6 rounded border-primary border-2 hover:bg-content hover:text-secondary"
         >
     </form>
     <p>Don't have an account? <a href="/register" class="underline">Register</a></p>
     <br>
-    <div id="error" class="text-content">
+    <div id="error" class="text-primary">
         <% if(typeof(error)!="undefined"){ %> <%= error %> <%} %>
       </div>
 </div>
