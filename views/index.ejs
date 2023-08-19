@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>FF1</title>
+    <link href="/styles.css" rel="stylesheet" type="text/css" />
+  </head>
+  <body
+    class="bg-content text-secondary font-f1Regular flex flex-col justify-between min-h-screen"
+  >
+    <%- include("components/layout/header") %>
+    <div class="flex flex-col p-8">
+      <div
+        class="flex flex-col justify-center items-center w-full mb-4 text-center"
+      >
+        <div class="flex flex-col justify-center items-center">
+          <h1 class="text-2xl font-f1Wide">Welcome to FF1!</h1>
+          <p class="text-lg">The Fantasy Formula 1 game</p>
+        </div>
+      </div>
+
+      <div
+        class="border-4 rounded-tr-3xl border-r-primary border-t-primary border-b-content border-l-content p-4"
+      >
+        <p class="font-f1Bold">Welcome!</p>
+        Are you ready to experience the adrenaline of Formula 1 races in an
+        entirely new way? With FantaF1, you can become the manager of a team of
+        drivers and challenge other Formula 1 enthusiasts in creating the
+        perfect team. Choose your favorite drivers and compete!
+        <p class="font-f1Bold my-4">What Makes FantaF1 Unique:</p>
+        <p class="font-f1Bold">Strategic Choices:</p>
+        <p class="mb-4">
+          Test your strategic prowess in selecting drivers and managing the
+          resources at your disposal. Each driver comes with a cost, so you must
+          skillfully balance your budget to assemble the best team possible.
+        </p>
+        <p class="font-f1Bold">Intense Competition:</p>
+        <p class="mb-4">
+          Engage in competition with fellow Formula 1 enthusiasts from around
+          the world. Each race is an opportunity to showcase your knowledge of
+          the season, tracks, and driver performances.
+        </p>
+        <p class="font-f1Bold hidden">Live Scoring:</p>
+        <p class="mb-4 hidden">
+          Follow the race action live and keep an eye on your team's score in
+          real-time. Every overtake, pit stop, and finish line will impact your
+          final score.
+        </p>
+        <p>
+          Whether you're a seasoned Formula 1 expert or a new enthusiast,
+          FantaF1 offers you the chance to dive into the world of motor racing
+          and prove yourself as the ultimate team manager. Whether you're
+          competing with friends or challenging unknown opponents, FantaF1
+          promises to deliver an extra dose of excitement during every race.
+          Sign up now and embark on your journey into the realm of FantaF1.
+          Choose your drivers and go all-in for victory.
+        </p>
+      </div>
+      <a href="/dashboard">
+        <div class="m-4 border-2 border-base-100 rounded-lg shadow-sm">
+          <img
+            src="/images/murettoRedBull.jpg"
+            alt="murettoRedBull"
+            class="w-full h-48 bg-cover object-cover"
+          />
+          <div class="p-4">
+            <p class="text-primary font-f1Bold p-2 pl-0">GO TO DASHBOARD</p>
+            <p class="text-sm">Explore teams, view top 5 and more</p>
+          </div>
+        </div>
+      </a>
+      <a href="/team">
+        <div class="m-4 border-2 border-base-100 rounded-lg shadow-sm">
+          <img
+            src="/images/FerrariPitStop.avif"
+            alt="FerrariPitStop"
+            class="w-full h-48 bg-cover object-cover"
+          />
+          <div class="p-4">
+            <p class="text-primary font-f1Bold p-2 pl-0">YOUR TEAM</p>
+            <p class="text-sm">Create or view your team</p>
+          </div>
+        </div>
+      </a>
+    </div>
+    <%- include("components/layout/footer") %>
+  </body>
+</html>

@@ -41,7 +41,7 @@ function requireAdmin(req, res, next) {
 
 //pagina principale del sito
 app.get('/', (req, res) => {
-    //res.redirect('/teams'); //TODO: creare pagina principale
+    res.render("index", { isAuth: false });
 });
 
 app.get('/login', (req, res) => {
