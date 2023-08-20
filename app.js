@@ -112,8 +112,9 @@ app.get('/dashboard', requireAuth, async (req, res) => {
 
 // Pagina dell'amministratore (accessibile solo agli amministratori)
 app.get('/admin/dashboard', requireAdmin, (req, res) => {
-    res.send(`<h1>Benvenuto nella dashboard amministrativa!</h1>`);
-    //TODO aggiungere implementazione dashboard amministrativa
+    // implementare backend per la dashboard amministrativa
+
+    res.render('admin_dashboard', { isAuth: true, isAdmin: true });
 });
 
 // Logout
