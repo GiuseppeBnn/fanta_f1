@@ -15,23 +15,25 @@
       <div id="standings" class="md:max-h-96 my-4 rounded-md w-full md:w-5/12">
         <p class="text-lg font-medium">Global Top 5 Teams:</p>
         <% for(let i = 0; i < teams.length; i++){ %>
-        <div
-          id="<%=teams[i].teamId %>"
-          class="flex justify-between w-full hover:bg-secondary-focus hover:text-content hover:cursor-pointer rounded-sm shadow-sm p-2 text-lg gap-2"
-        >
-          <div class="flex justify-between w-full">
-            <div class="flex gap-4">
-              <p><%=i+1%></p>
-              <p><%= teams[i].teamName %></p>
+        <a href="/team/<%=teams[i].teamId%>">
+          <div
+            id="<%=teams[i].teamId %>"
+            class="flex justify-between w-full hover:bg-secondary-focus hover:text-content hover:cursor-pointer rounded-sm shadow-sm p-2 text-lg gap-2"
+          >
+            <div class="flex justify-between w-full">
+              <div class="flex gap-4">
+                <p><%=i+1%></p>
+                <p><%= teams[i].teamName %></p>
+              </div>
+              <p
+                class="text-xs rounded-full bg-base-100 p-2 text-center text-secondary"
+              >
+                <%= teams[i].score %> PTS
+              </p>
             </div>
-            <p
-              class="text-xs rounded-full bg-base-100 p-2 text-center text-secondary"
-            >
-              <%= teams[i].score %> PTS
-            </p>
+            <p class="text-primary">></p>
           </div>
-          <p class="text-primary">></p>
-        </div>
+        </a>
         <% if(i >=5){break;} %> <%} %>
       </div>
       <%}else{ %>

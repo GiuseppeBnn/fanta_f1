@@ -42,7 +42,7 @@ function requireAdmin(req, res, next) {
 //pagina principale del sito
 app.get('/', (req, res) => {
     let isAuth = false;
-    if(req.session && req.session.userId){
+    if (req.session && req.session.userId) {
         isAuth = true;
     }
     res.render("index", { isAuth: isAuth });
@@ -189,13 +189,13 @@ app.post("/team/create", requireAuth, async (req, res) => {
     }
     res.redirect("/dashboard");
 });
-app.get("/pilot/:id", requireAuth, async (req, res) => {
+/*app.get("/pilot/:id", requireAuth, async (req, res) => {
     let pilot = await db.getPilotInfo(req.params.id);
     let pilotId = req.params.id;
     res.render("pilot", { pilot: pilot, pilotId: pilotId });   //TODO: pilot template
 });
 
-app.get("/round/:r/pilot/:id", requireAuth, async (req, res) => {
+/*app.get("/round/:r/pilot/:id", requireAuth, async (req, res) => {
     let pilot = await db.getPilotInfo(req.params.id);
     let round = await db.getRoundInfo(req.params.r);
     res.render("pilot_round", { pilot: pilot, round: round });   //TODO: pilot template with round info and bonus
@@ -203,13 +203,22 @@ app.get("/round/:r/pilot/:id", requireAuth, async (req, res) => {
 app.get("/round/:r", requireAuth, async (req, res) => {
     let round = await db.getRoundInfo(req.params.r);
     res.render("round", { round: round });   //TODO: round template
-});
+});*/
 app.get("/team/", requireAuth, async (req, res) => {
     let userId = req.session.userId;
     let hasTeam = await db.hasTeam(userId);
     if (hasTeam) {
         let team = await db.getTeam(userId);
         let teamPilotsScore = await db.retrieveTeamPilotsInfo(userId);
+        res.render("team", { team: team, isAuth: true, teamPilotsScore: teamPilotsScore });   //TODO: team template
+    }
+});
+app.get("/team/:id", requireAuth, async (req, res) => {
+    let teamId = req.params.id;
+    let hasTeam = await db.hasTeam(teamId);
+    if (hasTeam) {
+        let team = await db.getTeam(teamId);
+        let teamPilotsScore = await db.retrieveTeamPilotsInfo(teamId);
         res.render("team", { team: team, isAuth: true, teamPilotsScore: teamPilotsScore });   //TODO: team template
     }
 });
