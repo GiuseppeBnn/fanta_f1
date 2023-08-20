@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Your Team</title>
+    <link href="/styles.css" rel="stylesheet" type="text/css" />
+  </head>
+  <body
+    class="bg-content text-secondary font-f1Regular flex flex-col justify-between min-h-screen"
+  >
+    <%- include("components/layout/header") %>
+    <div class="p-8">
+      <p class="text-xl font-f1Wide"><%=team.teamName %></p>
+      <p class="font-f1Bold">Total Score: <%= team.score %></p>
+      <div class="grid gap-4 md:grid-flow-row md:grid-cols-3">
+        <% for( let i = 0; i < teamPilotsScore.length; i++){ %>
+        <div class="flex flex-col" id="<%= teamPilotsScore[i][0].id %>">
+          <img
+            src="/images/pilots/pilot-<%= teamPilotsScore[i][0].id  %>.avif"
+            alt="pilot-<%= teamPilotsScore[i][0].id %>"
+            class="w-full h-60 bg-cover object-cover bg-left-top object-top"
+          />
+
+          <div class="p-4 shadow-md rounded-b-sm h-[212px]">
+            <div class="flex justify-between mb-4">
+              <div>
+                <span class="font-f1Regular text-sm">
+                  <%= teamPilotsScore[i][0].name %>
+                </span>
+                <span class="font-f1Bold">
+                  <%= teamPilotsScore[i][0].surname %>
+                </span>
+              </div>
+              <p
+                class="text-xs rounded-full bg-base-100 py-1 px-2 h-fit text-center text-secondary"
+              >
+                <%= teamPilotsScore[i][0].totalScore %> PTS
+              </p>
+            </div>
+            
+            <div class="text-sm">
+              <p class="mb-2">Last Round Result</p>
+              <div class="flex justify-between items-baseline mb-1">
+                <p>
+                  Position <%=
+                  teamPilotsScore[i][teamPilotsScore[i].length-1]["roundResult"]["position"]
+                  %>
+                </p>
+                <p
+                  class="text-xs rounded-full bg-base-100 py-1 px-2 text-center text-secondary"
+                >
+                  <%= teamPilotsScore[i][teamPilotsScore[i].length-1]["points"] %>
+                  PTS <%
+                  console.log(teamPilotsScore[i][teamPilotsScore[i].length-1]["points"])
+                  %>
+                </p>
+              </div>
+              <% if(
+              teamPilotsScore[i][teamPilotsScore[i].length-1]["fastestLapBonus"] !=
+              "0" ){ %>
+              <div class="flex justify-between items-baseline mb-1">
+                <p>Fastest Lap</p>
+                <p
+                  class="text-xs rounded-full bg-base-100 py-1 px-2 text-center text-secondary"
+                >
+                  <%=
+                  teamPilotsScore[i][teamPilotsScore[i].length-1]["fastestLapBonus"]
+                  %> PTS
+                </p>
+              </div>
+              <% } %>
+              <div class="flex justify-between items-baseline mb-1">
+                <p>Position Gained</p>
+                <p
+                  class="text-xs rounded-full bg-base-100 py-1 px-2 text-center text-secondary"
+                >
+                  <%=
+                  teamPilotsScore[i][teamPilotsScore[i].length-1]["positionGainedBonus"]
+                  %> PTS
+                </p>
+              </div>
+              <div class="flex justify-between items-baseline mb-1">
+                <p class="text-primary">Total</p>
+                <p
+                  class="text-xs rounded-full bg-base-100 py-1 px-2 text-center text-secondary"
+                >
+                  <%= teamPilotsScore[i][teamPilotsScore[i].length-1]["total"] %>
+                  PTS
+                </p>
+              </div>
+            </div>
+          </div>
+          
+        </div>
+        <% } %>
+      </div>
+    </div>
+
+    <%- include("components/layout/footer") %>
+  </body>
+</html>

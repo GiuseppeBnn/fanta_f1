@@ -5,11 +5,24 @@ const cron = require("node-cron");
 
 const pool = createPool();
 const maxCoinBudget = 2000;
+let pilotsNicks ={};
+let pilotsGlobalInfo = {};
+//trying caching of semistatic info
+
 
 let lastRoundNum;
 getLastRoundNumber().then((roundNum) => {
   this.lastRoundNum = roundNum;
 });
+
+
+async function cachePilotsGlobalInfo(){
+  let pilots = await getPilots();
+  pilots.forEach((pilot) => {
+    if (pilot.permanentNumber == 33) pilot.permanentNumber = 1;
+    pilotsGlobalInfo[pilot.permanentNumber] = pilot;
+  });
+}
 
 function createPool() {
   let pool = mysql.createPool({
@@ -27,6 +40,7 @@ const inizializeDatabase = async () => {
   await newSeasonCleanup();
   await inizializePilotsTable();
   await insertPilots();
+  await getPilotsNicks();
   //TODO: creare tabella dei team
   await createPointsTable();
   await populatePointsTable();
@@ -36,7 +50,7 @@ const inizializeDatabase = async () => {
   await createBonusTable();
   await retrieveAllRoundResults();
   //await insertTestStandings();
-
+  await cachePilotsGlobalInfo();
 
 };
 
@@ -56,7 +70,6 @@ async function inizializePilotsTable() {
           console.error("Errore durante la creazione della tabella:", err);
           reject(err);
         } else {
-          //console.log("Tabella dei piloti creata con successo!");
           resolve(true);
         }
       }
@@ -643,7 +656,7 @@ async function updatePilotsScore(lastRaceScore, lastRoundResult) {
         pilotRoundScore = "0,0,0;";
       }
       if (lastPilotScore != null) {
-        console.log(lastPilotScore);
+        //console.log(lastPilotScore);
         pilotRoundScore = lastPilotScore + pilotRoundScore;
       }
       pool.execute(
@@ -749,7 +762,7 @@ async function retrieveAllRoundResults() {
 }
 async function getLastRoundNumber() {
   let lastRound = await axios.get('http://ergast.com/api/f1/current/last/results.json');
-  console.log(lastRound.data);
+  //console.log(lastRound.data);
   let lastRoundNumber = lastRound.data.MRData.RaceTable.round;
   return lastRoundNumber;
 }
@@ -1019,12 +1032,12 @@ async function getMembersInfo(teamId) {
           reject(err);
         } else {
           if (result.length > 0) {
-            console.log("Membri del team trovati con successo!");
+            //console.log("Membri del team trovati con successo!");
             let membersArray = result[0].idPilots.split(",");
             let membersData = [];
             for (let i = 0; i < membersArray.length; i++) {
               membersData[i] = {};
-              console.log("membersArray[i]:", membersArray[i]);
+              //console.log("membersArray[i]:", membersArray[i]);
               membersData[i] = await getPilotInfo(membersArray[i]);
             }
             resolve(membersData);
@@ -1149,7 +1162,7 @@ async function getPilotsId() {
           reject(err);
         } else {
           if (result.length > 0) {
-            console.log("Piloti trovati con successo!");
+            //console.log("Piloti trovati con successo!");
             resolve(result);
           } else {
             console.log("Piloti non presenti nel database!");
@@ -1179,9 +1192,9 @@ async function getTeamsSinglePilotsPoints(teamId) {
             let membersData = {};
             for (let i = 0; i < membersArray.length; i++) {
               membersData[membersArray[i]] = {};
-              console.log("membersArray[i]:", membersArray[i]);
+              //console.log("membersArray[i]:", membersArray[i]);
               membersData[membersArray[i]] = await getPilotTotalScore(membersArray[i]);
-              console.log("membersData[i]:", membersData[membersArray[i]]);
+              //console.log("membersData[i]:", membersData[membersArray[i]]);
             }
             resolve(membersData);
           } else {
@@ -1196,8 +1209,108 @@ async function getTeamsSinglePilotsPoints(teamId) {
   });
 }
 
+async function getPilotsNicks(){
+  let pilotsData=await getPilots();
+  for(let i=0;i<pilotsData.length;i++){
+    if(pilotsData[i].permanentNumber==33){
+      pilotsData[i].permanentNumber=1;
+    }
+    pilotsNicks[pilotsData[i].permanentNumber]=pilotsData[i].driverId;
+  }
+}
+
+async function retrievePilotResults(pilotId){
+  let pilotNick=pilotsNicks[pilotId];
+  const url="http://ergast.com/api/f1/current/drivers/"+pilotNick+"/results.json";
+  try {
+    const response = await axios.get(url);
+    const driversData = response.data.MRData.RaceTable.Races;
+    return driversData;
+  } catch (error) {
+    console.error("Errore durante la richiesta:", error.message);
+  }
+  
+}
+
+async function getPilotLastRoundResult(pilotId){
+  let pilotResults=await retrievePilotResults(pilotId);
+  let lastRoundResult=pilotResults[pilotResults.length-1];
+  return lastRoundResult;
+}
+
+
+async function retrievePilotAllBonuses(pilotId){
+  let pilotScore=await getPilotScore(pilotId);
+  let lastRoundResult=await getPilotLastRoundResult(pilotId);
+  let pilotStrippedScore=pilotScore.split(";");
+  let pilotTotalScore=await getPilotTotalScore(pilotId);
+  let pilotPointsForRound=[];
+  for(let i=0;i<pilotStrippedScore.length;i++){
+    if(pilotStrippedScore[i]!=""){
+      let roundScore=pilotStrippedScore[i].split(",");
+      console.log("roundScore:",roundScore);
+      pilotPointsForRound[i]={};
+      pilotPointsForRound[i]["id"]=pilotId;
+      pilotPointsForRound[i]["name"]= pilotsGlobalInfo[pilotId].givenName;
+      pilotPointsForRound[i]["surname"]= pilotsGlobalInfo[pilotId].familyName;
+      pilotPointsForRound[i]["points"]=roundScore[0];
+      pilotPointsForRound[i]["positionGainedBonus"]=roundScore[1];
+      pilotPointsForRound[i]["fastestLapBonus"]=roundScore[2];
+      pilotPointsForRound[i]["total"]=parseInt(roundScore[0])+parseInt(roundScore[1])+parseInt(roundScore[2]);
+      pilotPointsForRound[i]["round"]=i+1;
+      pilotPointsForRound[i]["roundResult"]={};
+      pilotPointsForRound[i]["roundResult"]["position"]=lastRoundResult.Results[0].position;
+      pilotPointsForRound[i]["roundResult"]["points"]=lastRoundResult.Results[0].points;
+      pilotPointsForRound[i]["roundResult"]["fastestLap"]=lastRoundResult.Results[0].FastestLap;
+      pilotPointsForRound[i]["totalScore"]=pilotTotalScore;
+    }
+
+  }
+  return pilotPointsForRound;
+  
+}
+
+async function retrieveTeamPilotsInfo(teamId){
+  let teamPilots=await getMembers(teamId);
+  let teamPilotsInfo=[];
+  for(let i=0;i<teamPilots.length;i++){
+    let pilotPointsForRound= await retrievePilotAllBonuses(teamPilots[i]);
+    teamPilotsInfo[i]={};
+    teamPilotsInfo[i]=pilotPointsForRound;
+  }
+  return teamPilotsInfo;
+}
+
+async function getMembers(teamId) {
+
+  return new Promise((resolve, reject) => {
+    pool.execute(
+      `
+      SELECT idPilots FROM teams
+      WHERE teamId = ?
+
+        `,
+      [teamId],
+      (err, result) => {
+        if (err) {
+          console.error("Errore durante la ricerca dei membri del team:", err);
+          reject(err);
+        } else {
+          if (result.length > 0) {
+            //console.log("Membri del team trovati con successo!");
+            resolve(result[0].idPilots.split(","));
+          } else {
+            console.log("Membri del team non presenti nel database!");
+            resolve(false);
+          }
+        }
+      }
+    );
+  });
+}
+
 
 
 
 //esporta modulo
-module.exports = { getTeamsSinglePilotsPoints, getPilotTotalScore, getPilotScore, checkTeamLegality, maxCoinBudget, getPilotInfo, getMembersInfo, calculateTeamScore, getPilotsValues, getUserId, hasTeam, retrieveAllRoundResults, getBonusTable, weeklyUpdate, updateRoundTotalScore, getBonusTable, getTeams, getTeam, inizializeDatabase, insertUser, verifyAdminAccess, verifyCredentials, queryUser, getPilots, updateScore, insertTeam, getTeams };
+module.exports = {retrieveTeamPilotsInfo, getTeamsSinglePilotsPoints, getPilotTotalScore, getPilotScore, checkTeamLegality, maxCoinBudget, getPilotInfo, getMembersInfo, calculateTeamScore, getPilotsValues, getUserId, hasTeam, retrieveAllRoundResults, getBonusTable, weeklyUpdate, updateRoundTotalScore, getBonusTable, getTeams, getTeam, inizializeDatabase, insertUser, verifyAdminAccess, verifyCredentials, queryUser, getPilots, updateScore, insertTeam, getTeams };

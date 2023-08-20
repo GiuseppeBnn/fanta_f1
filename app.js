@@ -41,7 +41,11 @@ function requireAdmin(req, res, next) {
 
 //pagina principale del sito
 app.get('/', (req, res) => {
-    res.render("index", { isAuth: false });
+    let isAuth = false;
+    if(req.session && req.session.userId){
+        isAuth = true;
+    }
+    res.render("index", { isAuth: isAuth });
 });
 
 app.get('/login', (req, res) => {
@@ -61,7 +65,6 @@ app.post('/login', async (req, res) => {
     try {
         // Verifica se l'utente esiste nel database
         let bool = await db.verifyCredentials(username, password);
-        console.log("bool:", bool);
         if (!bool) {
             res.render('login', { error: 'Invalid credentials', isAuth: false });
             return;
@@ -94,7 +97,6 @@ app.get('/dashboard', requireAuth, async (req, res) => {
     let userId = req.session.userId;
     let hasTeam = await db.hasTeam(userId);
     let teamPilotsScore = await db.getTeamsSinglePilotsPoints(userId);
-    console.log("teamPilotsScore:///////7", teamPilotsScore )
     if (hasTeam) {
         let team = await db.getTeam(userId);
         let members = await db.getMembersInfo(userId);
@@ -149,7 +151,7 @@ app.post('/register', async (req, res) => {
 });
 
 app.get("/register", (req, res) => {
-    
+
     if (req.session && req.session.userId) {
         return res.redirect("/dashboard");
     }
@@ -175,8 +177,8 @@ app.post("/team/create", requireAuth, async (req, res) => {
     let userId = req.session.userId;
     let hasTeam = await db.hasTeam(userId);
     if (!hasTeam) {
-        let check=await db.checkTeamLegality(req.body.pilots);
-        if(!check){
+        let check = await db.checkTeamLegality(req.body.pilots);
+        if (!check) {
             return res.redirect("/team/create");
         }
         let teamName = req.body.teamName;
@@ -189,7 +191,8 @@ app.post("/team/create", requireAuth, async (req, res) => {
 });
 app.get("/pilot/:id", requireAuth, async (req, res) => {
     let pilot = await db.getPilotInfo(req.params.id);
-    res.render("pilot", { pilot: pilot });   //TODO: pilot template
+    let pilotId = req.params.id;
+    res.render("pilot", { pilot: pilot, pilotId: pilotId });   //TODO: pilot template
 });
 
 app.get("/round/:r/pilot/:id", requireAuth, async (req, res) => {
@@ -201,18 +204,27 @@ app.get("/round/:r", requireAuth, async (req, res) => {
     let round = await db.getRoundInfo(req.params.r);
     res.render("round", { round: round });   //TODO: round template
 });
+app.get("/team/", requireAuth, async (req, res) => {
+    let userId = req.session.userId;
+    let hasTeam = await db.hasTeam(userId);
+    if (hasTeam) {
+        let team = await db.getTeam(userId);
+        let teamPilotsScore = await db.retrieveTeamPilotsInfo(userId);
+        res.render("team", { team: team, isAuth: true, teamPilotsScore: teamPilotsScore });   //TODO: team template
+    }
+});
+
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
 app.all("*", (req, res) => {
-    console.log("not found");
-    if(req.session.userId){
-        res.render("not_found", {isAuth: true});
+    if (req.session.userId) {
+        res.render("not_found", { isAuth: true });
     }
-    else{
-        res.render("not_found", {isAuth: false});
+    else {
+        res.render("not_found", { isAuth: false });
     }
-    
+
 });
 // Avvio del server
 const port = 3000;
