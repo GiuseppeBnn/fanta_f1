@@ -11,6 +11,7 @@ app.set('view engine', 'ejs');
 db.inizializeDatabase();
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(__dirname + '/build'));
+app.use(express.json());
 app.use(session({
     secret: 'segreto_segretissimo',
     resave: false,
@@ -112,9 +113,55 @@ app.get('/dashboard', requireAuth, async (req, res) => {
 
 // Pagina dell'amministratore (accessibile solo agli amministratori)
 app.get('/admin/dashboard', requireAdmin, (req, res) => {
-    // implementare backend per la dashboard amministrativa
-
     res.render('admin_dashboard', { isAuth: true, isAdmin: true });
+});
+
+app.post('/admin/remove-user', requireAdmin, async (req, res) => {
+    let userId = req.body.userId;
+    let deleted = await db.deleteUser(userId);
+    if (deleted) {
+        return res.render('admin_dashboard', { isAuth: true, isAdmin: true, userInfo: "User " + userId + " and team deleted successfully" });
+    }
+    else {
+        return res.render('admin_dashboard', { isAuth: true, isAdmin: true, userError: "Error while deleting user" });
+    }
+});
+app.post('/admin/remove-team', requireAdmin, async (req, res) => {
+    let teamId = req.body.teamId;
+    let deleted = await db.deleteTeam(teamId);
+    if (deleted) {
+        return res.render('admin_dashboard', { isAuth: true, isAdmin: true, teamInfo: "Team " + teamId + " deleted successfully" });
+    }
+    else {
+        return res.render('admin_dashboard', { isAuth: true, isAdmin: true, teamError: "Error while deleting team" });
+    }
+});
+
+/*app.post('/admin/teams', requireAdmin, async (req, res) => {
+    let offset = req.body.offset;
+    let limit = req.body.limit;
+    let teams = await db.getTeamsList(offset, limit);
+    res.json(teams);
+});*/
+app.post('/admin/users', requireAdmin, async (req, res) => {
+    console.log(req.body);
+    let offset = req.body.offset;
+    let limit = req.body.limit;
+    let users = await db.getUsersList(offset, limit);
+    return res.json(users);
+
+});
+
+app.get("/admin/search-users/:query", requireAdmin, async (req, res) => {
+    let query = req.params.query;
+    query = query.trim().split(" ")[0];
+    try {
+        let users = await db.searchUsers(query);
+        return res.json(users);
+    } catch (error) {
+        console.log(error);
+        return res.json([]);
+    }
 });
 
 // Logout
