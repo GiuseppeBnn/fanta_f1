@@ -46,7 +46,11 @@ app.get('/', (req, res) => {
     if (req.session && req.session.userId) {
         isAuth = true;
     }
-    res.render("index", { isAuth: isAuth });
+    if (req.session && req.session.role === 'admin') {
+        return res.render("index", { isAuth: isAuth , isAdmin: true});
+    }
+    return res.render("index", { isAuth: isAuth });
+    
 });
 
 app.get('/login', (req, res) => {
@@ -272,6 +276,9 @@ app.get("/round/:r", requireAuth, async (req, res) => {
 });*/
 app.get("/team/", requireAuth, async (req, res) => {
     let userId = req.session.userId;
+    if (req.session.role === "admin") {
+        return res.redirect("/admin/dashboard");
+    }
     let hasTeam = await db.hasTeam(userId);
     if (hasTeam) {
         let team = await db.getTeam(userId);

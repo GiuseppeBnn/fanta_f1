@@ -59,7 +59,9 @@
       </div>
       <div class="md:ml-4">
         <a href="/dashboard">
-          <div class="m-4 border-2 border-base-100 rounded-lg shadow-sm w-fit h-72">
+          <div
+            class="m-4 border-2 border-base-100 rounded-lg shadow-sm w-fit h-72"
+          >
             <img
               src="/images/murettoRedBull.jpg"
               alt="murettoRedBull"
@@ -73,8 +75,11 @@
         </a>
       </div>
       <div>
+        <% if (typeof(isAdmin)=="undefined") { %>
         <a href="/team">
-          <div class="m-4 border-2 border-base-100 rounded-lg shadow-sm w-fit h-72">
+          <div
+            class="m-4 border-2 border-base-100 rounded-lg shadow-sm w-fit h-72"
+          >
             <img
               src="/images/FerrariPitStop.avif"
               alt="FerrariPitStop"
@@ -86,6 +91,7 @@
             </div>
           </div>
         </a>
+        <% } %>
       </div>
     </div>
     <%- include("components/layout/footer") %>
