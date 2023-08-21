@@ -112,10 +112,28 @@ app.get('/dashboard', requireAuth, async (req, res) => {
 });
 
 // Pagina dell'amministratore (accessibile solo agli amministratori)
-app.get('/admin/dashboard', requireAdmin, (req, res) => {
-    res.render('admin_dashboard', { isAuth: true, isAdmin: true });
+app.get('/admin/dashboard', requireAdmin, async (req, res) => {
+    const pilotValues = await db.getPilotsValues();
+    res.render('admin_dashboard', { isAuth: true, isAdmin: true, pilotValues: pilotValues });
 });
 
+app.post('/change/values', requireAdmin, async (req, res) => {
+    const pilotsKeys = Object.keys(req.body);
+    const pilotsValues = Object.values(req.body);
+    try {
+        for (let i = 0; i < pilotsKeys.length; i++) {
+            let pilotId = pilotsKeys[i].split("-")[1];
+            let pilotValue = pilotsValues[i].split(" ")[0];
+            let newScore = {};
+            newScore[pilotId] = pilotValue;
+            await db.updatePilotCoins(newScore);
+        }
+        return res.redirect('/admin/dashboard');
+    } catch (error) {
+        console.log(error);
+        return res.status(500).send('Si è verificato un errore durante l\'aggiornamento dei valori dei piloti.');
+    }
+});
 app.post('/admin/remove-user', requireAdmin, async (req, res) => {
     let userId = req.body.userId;
     let deleted = await db.deleteUser(userId);

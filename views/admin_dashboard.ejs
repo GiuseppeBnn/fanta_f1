@@ -10,97 +10,121 @@
     class="bg-content text-secondary font-f1Regular flex flex-col justify-between min-h-screen"
   >
     <%- include("components/layout/header") %>
-    <div class="flex flex-col">
-      <!--<div class=" flex-col overflow-y-scroll m-4 p-4 hidden" id="user-list"></div> -->
-      <div class="p-4 mx-4 my-2 border-2 rounded-lg border-secondary">
-        <p class="font-f1Bold">Search username info:</p>
-        <div class="flex flex-row justify-between gap-2 pb-2">
+
+    <!--<div class=" flex-col overflow-y-scroll m-4 p-4 hidden" id="user-list"></div> -->
+    <div class="p-4 mx-4 my-2 border-2 rounded-lg border-secondary">
+      <p class="font-f1Bold">Search username info:</p>
+      <div class="flex flex-row justify-between gap-2 pb-2">
+        <input
+          type="text"
+          name="user-search"
+          id="user-search-input"
+          class="border-b-primary border-b-2 w-full py-2 px-3 leading-tight max-w-sm text-secondary outline-none bg-content"
+        />
+        <div
+          class="bg-primary text-content hover:cursor-pointer py-1 px-4 rounded border-primary border-2 hover:bg-content hover:text-secondary w-fit h-fit"
+          id="user-search-button"
+        >
+          Search
+        </div>
+      </div>
+      <div id="user-list" class="overflow-y-scroll max-h-40"></div>
+    </div>
+    <div class="md:grid md:grid-cols-2">
+      <div
+        id="remove-user"
+        class="border-2 border-secondary rounded-lg p-4 m-4"
+      >
+        <p class="font-f1Bold text-lg">Remove user</p>
+        <p>To remove an user insert id:</p>
+        <form action="/admin/remove-user" method="POST" id="remove-user-form">
+          <div class="mb-4">
+            <input
+              type="number"
+              name="userId"
+              id="userId"
+              class="border-b-primary border-b-2 w-full py-2 px-3 leading-tight max-w-sm text-secondary outline-none bg-content"
+              required
+            />
+          </div>
           <input
-            type="text"
-            name="user-search"
-            id="user-search-input"
-            class="border-b-primary border-b-2 w-full py-2 px-3 leading-tight max-w-sm text-secondary outline-none bg-content"
+            type="submit"
+            value="Remove"
+            class="bg-primary text-content hover:cursor-pointer hover: font-bold py-2 px-6 rounded border-primary border-2 hover:bg-content hover:text-secondary"
           />
-          <div
-            class="bg-primary text-content hover:cursor-pointer py-1 px-4 rounded border-primary border-2 hover:bg-content hover:text-secondary w-fit h-fit"
-            id="user-search-button"
-          >
-            Search
-          </div>
+        </form>
+        <div class="font-f1Bold text-primary" id="error-user">
+          <% if( typeof(userError) != "undefined" && userError ){ %>
+          <p><%= userError %></p>
+          <% } %>
         </div>
-        <div id="user-list" class="overflow-y-scroll max-h-40"></div>
+        <div class="font-f1Bold text-sm" id="info-user">
+          <% if( typeof(userInfo) != "undefined" && userInfo ){ %>
+          <p><%= userInfo %></p>
+          <% } %>
+        </div>
       </div>
-      <div class="md:grid md:grid-cols-2">
-        <div
-          id="remove-user"
-          class="border-2 border-secondary rounded-lg p-4 m-4"
-        >
-          <p class="font-f1Bold text-lg">Remove user</p>
-          <p>To remove an user insert id:</p>
-          <form action="/admin/remove-user" method="POST" id="remove-user-form">
-            <div class="mb-4">
-              <input
-                type="number"
-                name="userId"
-                id="userId"
-                class="border-b-primary border-b-2 w-full py-2 px-3 leading-tight max-w-sm text-secondary outline-none bg-content"
-                required
-              />
-            </div>
+      <div
+        id="remove-team"
+        class="border-2 border-secondary rounded-lg p-4 m-4"
+      >
+        <p class="font-f1Bold text-lg">Remove team</p>
+        <p>To remove a team insert id:</p>
+        <form action="/admin/remove-team" method="POST" id="remove-team-form">
+          <div class="mb-4">
             <input
-              type="submit"
-              value="Remove"
-              class="bg-primary text-content hover:cursor-pointer hover: font-bold py-2 px-6 rounded border-primary border-2 hover:bg-content hover:text-secondary"
+              type="text"
+              name="teamId"
+              id="teamId"
+              class="border-b-primary border-b-2 w-full py-2 px-3 leading-tight max-w-sm text-secondary outline-none bg-content"
+              required
             />
-          </form>
-          <div class="font-f1Bold text-primary" id="error-user">
-            <% if( typeof(userError) != "undefined" && userError ){ %>
-            <p><%= userError %></p>
-            <% } %>
           </div>
-          <div class="font-f1Bold text-sm" id="info-user">
-            <% if( typeof(userInfo) != "undefined" && userInfo ){ %>
-            <p><%= userInfo %></p>
-            <% } %>
-          </div>
+          <input
+            type="submit"
+            value="Remove"
+            class="bg-primary text-content hover:cursor-pointer hover: font-bold py-2 px-6 rounded border-primary border-2 hover:bg-content hover:text-secondary"
+          />
+        </form>
+        <div class="font-f1Bold text-primary" id="error-team">
+          <% if( typeof(teamError) != "undefined" && teamError ){ %>
+          <p><%= teamError %></p>
+          <% } %>
         </div>
-        <div
-          id="remove-team"
-          class="border-2 border-secondary rounded-lg p-4 m-4"
-        >
-          <p class="font-f1Bold text-lg">Remove team</p>
-          <p>To remove a team insert id:</p>
-          <form action="/admin/remove-team" method="POST" id="remove-team-form">
-            <div class="mb-4">
-              <input
-                type="text"
-                name="teamId"
-                id="teamId"
-                class="border-b-primary border-b-2 w-full py-2 px-3 leading-tight max-w-sm text-secondary outline-none bg-content"
-                required
-              />
-            </div>
-            <input
-              type="submit"
-              value="Remove"
-              class="bg-primary text-content hover:cursor-pointer hover: font-bold py-2 px-6 rounded border-primary border-2 hover:bg-content hover:text-secondary"
-            />
-          </form>
-          <div class="font-f1Bold text-primary" id="error-team">
-            <% if( typeof(teamError) != "undefined" && teamError ){ %>
-            <p><%= teamError %></p>
-            <% } %>
-          </div>
-          <div class="font-f1Bold text-sm" id="info-team">
-            <% if( typeof(teamInfo) != "undefined" && teamInfo ){ %>
-            <p><%= teamInfo %></p>
-            <% } %>
-          </div>
+        <div class="font-f1Bold text-sm" id="info-team">
+          <% if( typeof(teamInfo) != "undefined" && teamInfo ){ %>
+          <p><%= teamInfo %></p>
+          <% } %>
         </div>
       </div>
-      <div id="change-pilots-value">
-        
-      </div>
+    </div>
+    <div class="p-4 m-4 border-2 border-secondary rounded-lg overflow-y-scroll max-h-80">
+      <p class="font-f1Bold text-lg">Update Pilots Values</p>
+      <p class="mb-2">Change and update pilots coins</p>
+      <form action="/change/values" method="POST" id="update-values-form">
+        <div class="flex justify-between">
+          <p class="font-f1Bold text-lg">Pilot</p>
+          <p class="font-f1Bold text-lg">Value</p>
+        </div>
+        <% for(let i = 0; i < pilotValues.length; i++){ %>
+        <div class="grid grid-cols-3 py-2 border-b-2 border-b-secondary items-baseline mb-4">
+          <p><%= pilotValues[i].name + " " + pilotValues[i].surname %></p>
+          <input
+            type="number"
+            name="pilot-<%= pilotValues[i].id %>"
+            id="change-pilots-value"
+            value="<%= pilotValues[i].value %>"
+            class="border-b-primary border-b-2 w-full py-2 px-3 leading-tight max-w-sm text-secondary outline-none bg-content col-start-3"
+            required
+          />
+        </div>
+        <% } %>
+        <input
+          type="submit"
+          value="Change"
+          class="bg-primary text-content hover:cursor-pointer hover: font-bold py-2 px-6 rounded border-primary border-2 hover:bg-content hover:text-secondary"
+        />
+      </form>
     </div>
     <%- include("components/layout/footer") %>
 
@@ -108,6 +132,11 @@
       ////////////////////////////////////////////////////////////////////////
       const removeUser = document.getElementById("remove-user-form");
       const removeTeam = document.getElementById("remove-team-form");
+      const userList = document.getElementById("user-list");
+      const userSearchButton = document.getElementById("user-search-button");
+      const userSearchInput = document.getElementById("user-search-input");
+      const updateValuesForm= document.getElementById("update-values-form");
+
 
       removeUser.addEventListener("submit", (e) => {
         e.preventDefault();
@@ -129,11 +158,6 @@
           removeTeam.submit();
         }
       });
-
-      const userList = document.getElementById("user-list");
-      const changePilotsValue = document.getElementById("change-pilots-value");
-      const userSearchButton = document.getElementById("user-search-button");
-      const userSearchInput = document.getElementById("user-search-input");
       ///////////////////
       async function searchUsers(parameter) {
         const response = await fetch(`/admin/search-users/${parameter}`);
@@ -176,6 +200,17 @@
           });
         }
       });
+
+      updateValuesForm.addEventListener("submit", (e) => {
+        e.preventDefault();
+        const confirmation = confirm(
+          "Are you sure you want to change the values?"
+        );
+        if (confirmation) {
+          updateValuesForm.submit();
+        }
+      });
+
     </script>
   </body>
 </html>

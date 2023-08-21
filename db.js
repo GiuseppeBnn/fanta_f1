@@ -385,7 +385,7 @@ async function insertCoins() {
   }
 }
 
-async function updateCoins(newScore) {    //dove newScore è un oggetto con chiave l'id del pilota e valore il punteggio da aggiungere
+async function updatePilotCoins(newScore) {    //dove newScore è un oggetto con chiave l'id del pilota e valore il punteggio da aggiungere
   return new Promise((resolve, reject) => {
     for (let i = 0; i < Object.keys(newScore).length; i++) {
       pool.execute(
@@ -967,7 +967,7 @@ async function getPilotsTable() {
 }
 
 
-async function getPilotsValues() {   //inutile
+async function getPilotsValues() { 
   let pilots = await getPilotsTable();
   let coins = await getCoins();
   let pilotsValues = [];
@@ -1472,6 +1472,8 @@ async function searchUsers(username) {
   });
 }
 
+
+
 function insertTestUsers() {
   for(let i = 0; i < 10; i++){
     insertUser("testUser" + i, "testPassword" + i);
@@ -1482,4 +1484,4 @@ function insertTestUsers() {
 
 
 //esporta modulo
-module.exports = { searchUsers,getUsersList, getTeamsList, deleteUser, deleteTeam, retrieveTeamPilotsInfo, getTeamsSinglePilotsPoints, getPilotTotalScore, getPilotScore, checkTeamLegality, maxCoinBudget, getPilotInfo, getMembersInfo, calculateTeamScore, getPilotsValues, getUserId, hasTeam, retrieveAllRoundResults, getBonusTable, weeklyUpdate, updateRoundTotalScore, getBonusTable, getTeams, getTeam, inizializeDatabase, insertUser, verifyAdminAccess, verifyCredentials, queryUser, getPilots, updateScore, insertTeam, getTeams };
+module.exports = { updatePilotCoins,searchUsers,getUsersList, getTeamsList, deleteUser, deleteTeam, retrieveTeamPilotsInfo, getTeamsSinglePilotsPoints, getPilotTotalScore, getPilotScore, checkTeamLegality, maxCoinBudget, getPilotInfo, getMembersInfo, calculateTeamScore, getPilotsValues, getUserId, hasTeam, retrieveAllRoundResults, getBonusTable, weeklyUpdate, updateRoundTotalScore, getBonusTable, getTeams, getTeam, inizializeDatabase, insertUser, verifyAdminAccess, verifyCredentials, queryUser, getPilots, updateScore, insertTeam, getTeams };
