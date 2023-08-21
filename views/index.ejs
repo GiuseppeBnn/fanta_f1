@@ -57,41 +57,52 @@
           </p>
         </div>
       </div>
-      <div class="md:ml-4">
-        <a href="/dashboard">
-          <div
-            class="m-4 border-2 border-base-100 rounded-lg shadow-sm w-fit h-72"
-          >
-            <img
-              src="/images/murettoRedBull.jpg"
-              alt="murettoRedBull"
-              class="w-96 h-48 bg-cover object-cover"
-            />
-            <div class="py-2 px-4">
-              <p class="text-primary font-f1Bold pb-2">GO TO DASHBOARD</p>
-              <p class="text-sm">Explore teams, view top 5 and more</p>
+      <div class="md:grid md:grid-cols-2">
+        <div class="md:ml-4">
+          <a href="/dashboard">
+            <div
+              class="m-4 border-2 border-base-100 rounded-lg shadow-sm w-fit h-72"
+            >
+              <img
+                src="/images/murettoRedBull.jpg"
+                alt="murettoRedBull"
+                class="w-96 h-48 bg-cover object-cover"
+              />
+              <% if (typeof(isAdmin)=="undefined") { %>
+              <div class="py-2 px-4">
+                <p class="text-primary font-f1Bold pb-2">GO TO DASHBOARD</p>
+                <p class="text-sm">Explore teams, view top 5 and more</p>
+              </div>
+              <% } else if (isAdmin) { %>
+              <div class="py-2 px-4">
+                <p class="text-primary font-f1Bold pb-2">
+                  GO TO ADMIN DASHBOARD
+                </p>
+                <p class="text-sm">Administrator options</p>
+              </div>
+              <% } %>
             </div>
-          </div>
-        </a>
-      </div>
-      <div>
-        <% if (typeof(isAdmin)=="undefined") { %>
-        <a href="/team">
-          <div
-            class="m-4 border-2 border-base-100 rounded-lg shadow-sm w-fit h-72"
-          >
-            <img
-              src="/images/FerrariPitStop.avif"
-              alt="FerrariPitStop"
-              class="w-96 h-48 bg-cover object-cover"
-            />
-            <div class="py-2 px-4">
-              <p class="text-primary font-f1Bold pb-2">YOUR TEAM</p>
-              <p class="text-sm">Create or view your team</p>
+          </a>
+        </div>
+        <div>
+          <% if (typeof(isAdmin)=="undefined") { %>
+          <a href="/team">
+            <div
+              class="m-4 border-2 border-base-100 rounded-lg shadow-sm w-fit h-72"
+            >
+              <img
+                src="/images/FerrariPitStop.avif"
+                alt="FerrariPitStop"
+                class="w-96 h-48 bg-cover object-cover"
+              />
+              <div class="py-2 px-4">
+                <p class="text-primary font-f1Bold pb-2">YOUR TEAM</p>
+                <p class="text-sm">Create or view your team</p>
+              </div>
             </div>
-          </div>
-        </a>
-        <% } %>
+          </a>
+          <% } %>
+        </div>
       </div>
     </div>
     <%- include("components/layout/footer") %>
