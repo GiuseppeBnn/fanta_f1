@@ -45,12 +45,21 @@
             id="<%= pilots[i].id %>"
             class="relative shadow-sm p-4 text-lg font-bold border-2 border-content"
           >
-            <div>
-              <%= pilots[i].name %> <%= pilots[i].surname %>
-              <p class="text-sm font-medium">Team</p>
-              <p class="text-sm font-semibold text-primary">
-                <%= pilots[i].value %> coins
-              </p>
+            <div class="flex">
+              <div class="h-20 w-20 overflow-hidden mr-2 rounded-md">
+                <img
+                  src="/images/pilots/pilot-<%= pilots[i].id  %>.avif"
+                  alt="pilot-<%= pilots[i].id %>"
+                  class="transform scale-150 translate-y-[20px]"
+                />
+              </div>
+              <div>
+                <%= pilots[i].name %> <%= pilots[i].surname %>
+                <p class="text-sm font-medium">Team</p>
+                <p class="text-sm font-semibold text-primary">
+                  <%= pilots[i].value %> coins
+                </p>
+              </div>
             </div>
             <div class="absolute top-2 right-4 cursor-pointer">
               <i
@@ -58,7 +67,10 @@
                 id="purchase-<%= pilots[i].id %>"
               ></i>
             </div>
-            <p class="text-sm md:text-right font-normal h-4 text-primary" id="error-<%=pilots[i].id %>"></p>
+            <p
+              class="text-sm md:text-right font-normal h-4 text-primary"
+              id="error-<%=pilots[i].id %>"
+            ></p>
           </div>
           <% } %>
         </div>
@@ -82,14 +94,13 @@
           pilotId = pilotId.split("-")[1];
 
           const pilotCheckbox = document.getElementById("checkbox_" + pilotId);
-          const pilotVal=pilotCheckbox.dataset.val;
+          const pilotVal = pilotCheckbox.dataset.val;
           resetError(pilotId);
-          if(!isPurchaseable(pilotVal) && !pilotCheckbox.checked){
+          if (!isPurchaseable(pilotVal) && !pilotCheckbox.checked) {
             console.log("non si puo");
-            setError(pilotId);    //commentare per testing controlli validità in backend
+            setError(pilotId); //commentare per testing controlli validità in backend
             return;
           }
-
 
           pilotCheckbox.checked = !pilotCheckbox.checked;
           event.target.classList.toggle("bxs-plus-square");
@@ -100,9 +111,8 @@
         const pilotsSelect = document.querySelectorAll('[id^="checkbox_"]');
         const coinCounter = document.getElementById("coinCounter");
         const coinsUsed = document.getElementById("coinsUsed");
-        
 
-        let totalCost=0;
+        let totalCost = 0;
         const coinsMaxBudget = document
           .getElementById("maxBudget")
           .innerHTML.match(/\d+/)[0];
@@ -121,14 +131,13 @@
           return totalCost;
         }
 
-        
         function printCoinsUsed() {
           const used = calculateSelected();
           coinsUsed.innerHTML = `Coins used: ${used}`;
         }
 
         const form = document.querySelector("form");
-        form.addEventListener("submit", checkBudget);  //commentare per testing backend
+        form.addEventListener("submit", checkBudget); //commentare per testing backend
 
         function checkBudget(event) {
           let coinsUsed = calculateSelected();
@@ -142,29 +151,29 @@
           }
         }
 
-        function isPurchaseable(price){
-          const temp=parseInt(totalCost)+parseInt(price);
-          if(temp<=coinsMaxBudget){
+        function isPurchaseable(price) {
+          const temp = parseInt(totalCost) + parseInt(price);
+          if (temp <= coinsMaxBudget) {
             return true;
           }
           return false;
         }
 
-
-        function setError(pilotId){
-          const errorNode= document.getElementById("error-"+pilotId);
+        function setError(pilotId) {
+          const errorNode = document.getElementById("error-" + pilotId);
           console.log("errorNode", errorNode);
-          errorNode.innerHTML="You have exceeded the maximum budget ("+coinsMaxBudget+")";
-          let timeout= setTimeout(function(){resetError(pilotId);}, 3000);
-          
+          errorNode.innerHTML =
+            "You have exceeded the maximum budget (" + coinsMaxBudget + ")";
+          let timeout = setTimeout(function () {
+            resetError(pilotId);
+          }, 3000);
         }
-        function resetError(pilotId){
+        function resetError(pilotId) {
           console.log("reset", pilotId);
-          const errorN= document.getElementById("error-"+pilotId);
+          const errorN = document.getElementById("error-" + pilotId);
           console.log("reset", errorN);
-          errorN.innerHTML="";
+          errorN.innerHTML = "";
         }
-
       });
     </script>
   </body>
