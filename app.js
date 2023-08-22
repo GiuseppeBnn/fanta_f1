@@ -101,15 +101,13 @@ app.get('/dashboard', requireAuth, async (req, res) => {
     let isAuth = true;
     let userId = req.session.userId;
     let hasTeam = await db.hasTeam(userId);
-    let teamPilotsScore = await db.getTeamsSinglePilotsPoints(userId);
+    let teams = await db.getTeams();
     if (hasTeam) {
         let team = await db.getTeam(userId);
-        let members = await db.getMembersInfo(userId);
-        let teams = await db.getTeams();
-        res.render('user_dashboard', { team: team, teams: teams, hasTeam: hasTeam, members: members, isAuth: isAuth, teamPilotsScore: teamPilotsScore });
+        let teamPilotsScore =await db.retrieveTeamPilotsLastInfo(userId);
+        res.render('user_dashboard', { team: team, teams: teams, hasTeam: hasTeam, isAuth: isAuth, teamPilotsScore: teamPilotsScore });
     }
     else {
-        let teams = await db.getTeams();
         res.render('user_dashboard', { teams: teams, hasTeam: hasTeam, team: null, isAuth: isAuth });
     }
 
@@ -282,7 +280,7 @@ app.get("/team/", requireAuth, async (req, res) => {
     let hasTeam = await db.hasTeam(userId);
     if (hasTeam) {
         let team = await db.getTeam(userId);
-        let teamPilotsScore = await db.retrieveTeamPilotsInfo(userId);
+        let teamPilotsScore = await db.retrieveTeamPilotsLastInfo(userId);
         res.render("team", { team: team, isAuth: true, teamPilotsScore: teamPilotsScore });   //TODO: team template
     }
 });
@@ -291,7 +289,7 @@ app.get("/team/:id", requireAuth, async (req, res) => {
     let hasTeam = await db.hasTeam(teamId);
     if (hasTeam) {
         let team = await db.getTeam(teamId);
-        let teamPilotsScore = await db.retrieveTeamPilotsInfo(teamId);
+        let teamPilotsScore = await db.retrieveTeamPilotsLastInfo(teamId);
         res.render("team", { team: team, isAuth: true, teamPilotsScore: teamPilotsScore });   //TODO: team template
     }
 });

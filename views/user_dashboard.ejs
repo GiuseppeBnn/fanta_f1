@@ -56,21 +56,21 @@
           <p class="text-lg font-medium"><%= team.teamName %>:</p>
           <p class="text-sm font-medium mb-0"><%= team.score %> total points</p>
         </div>
-        <% for(let i = 0; i < members.length; i++){ %>
-        <a href="/pilot/<%= members[i].permanentNumber %>">
+        <% for(let i = 0; i < teamPilotsScore.length; i++){ %>
+        <a href="/pilot/<%= teamPilotsScore[i].id %>">
           <div
-            id="<%= members[i].permanentNumber %>"
+            id="<%= teamPilotsScore[i].id %>"
             class="flex justify-between w-full hover:bg-secondary-focus hover:text-content hover:cursor-pointer rounded-sm shadow-sm p-2 text-lg gap-2"
           >
             <div class="flex justify-between w-full text-lg">
               <div class="flex justify-between items-baseline gap-1">
-                <p class="font-f1Regular text-sm"><%= members[i].givenName%></p>
-                <p class="font-f1Bold"><%= members[i].familyName %></p>
+                <p class="font-f1Regular text-sm"><%= teamPilotsScore[i].name%></p>
+                <p class="font-f1Bold"><%= teamPilotsScore[i].surname %></p>
               </div>
               <p
                 class="text-xs rounded-full bg-base-100 p-2 text-center text-secondary"
               >
-                <%= teamPilotsScore[members[i].permanentNumber] %> PTS
+                <%= teamPilotsScore[i].totalScore %> PTS
               </p>
             </div>
             <p class="text-primary">></p>
