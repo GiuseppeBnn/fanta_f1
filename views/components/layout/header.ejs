@@ -939,7 +939,7 @@
       </svg>
     </a>
 
-    <% if (isAuth) { %>
+    <% if (typeof(isAuth)!="undefined" && isAuth) { %>
     <div class="flex gap-2">
       <% if (typeof(isAdmin)=="undefined") { %>
       <a href="/dashboard">
