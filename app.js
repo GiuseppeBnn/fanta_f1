@@ -157,12 +157,6 @@ app.post('/admin/remove-team', requireAdmin, async (req, res) => {
     }
 });
 
-/*app.post('/admin/teams', requireAdmin, async (req, res) => {
-    let offset = req.body.offset;
-    let limit = req.body.limit;
-    let teams = await db.getTeamsList(offset, limit);
-    res.json(teams);
-});*/
 app.post('/admin/users', requireAdmin, async (req, res) => {
     console.log(req.body);
     let offset = req.body.offset;
@@ -257,17 +251,12 @@ app.post("/team/create", requireAuth, async (req, res) => {
     }
     res.redirect("/dashboard");
 });
-/*app.get("/pilot/:id", requireAuth, async (req, res) => {
-    let pilot = await db.getPilotInfo(req.params.id);
-    let pilotId = req.params.id;
-    res.render("pilot", { pilot: pilot, pilotId: pilotId });   //TODO: pilot template
+app.get("/pilot/:id", requireAuth, async (req, res) => {
+    let pilotInfo = await db.retrievePilotAllInfo(req.params.id);
+    res.render("pilot", { pilotInfo: pilotInfo });   //TODO: pilot template
 });
 
-/*app.get("/round/:r/pilot/:id", requireAuth, async (req, res) => {
-    let pilot = await db.getPilotInfo(req.params.id);
-    let round = await db.getRoundInfo(req.params.r);
-    res.render("pilot_round", { pilot: pilot, round: round });   //TODO: pilot template with round info and bonus
-});
+/*
 app.get("/round/:r", requireAuth, async (req, res) => {
     let round = await db.getRoundInfo(req.params.r);
     res.render("round", { round: round });   //TODO: round template
