@@ -1240,11 +1240,12 @@ async function retrievePilotAllInfo(pilotId) {
   let pilotTotalScore = sumScore(pilotScore);
   let pilotStrippedScore = pilotScore.split(";");
   let pilotPointsForRound = [];
-  console.log(pilotsAllRoundsResults);
   for (let i = 0; i < pilotStrippedScore.length; i++) {
     if (pilotStrippedScore[i] != "") {
       let roundScore = pilotStrippedScore[i].split(",");
       pilotPointsForRound[i] = {};
+      pilotPointsForRound[i]["round"] = i + 1;
+      pilotPointsForRound[i]["roundName"]=pilotsAllRoundsResults[pilotId][i]["raceName"];
       pilotPointsForRound[i]["id"] = pilotId;
       pilotPointsForRound[i]["name"] = pilotsGlobalInfo[pilotId].givenName;
       pilotPointsForRound[i]["surname"] = pilotsGlobalInfo[pilotId].familyName;

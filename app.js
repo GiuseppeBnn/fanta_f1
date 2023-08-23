@@ -251,7 +251,7 @@ app.post("/team/create", requireAuth, async (req, res) => {
     }
     res.redirect("/dashboard");
 });
-app.get("/pilot/:id", requireAuth, async (req, res) => {
+app.get("/pilot/:id", async (req, res) => {
     let pilotInfo = await db.retrievePilotAllInfo(req.params.id);
     res.render("pilot", { pilotInfo: pilotInfo });   //TODO: pilot template
 });

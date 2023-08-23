@@ -3,15 +3,112 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title><%= pilotInfo.surname %></title>
+    <title><%= pilotInfo[0].surname %></title>
     <link href="/styles.css" rel="stylesheet" type="text/css" />
   </head>
   <body
     class="bg-content text-secondary font-f1Regular flex flex-col justify-between min-h-screen"
   >
     <%- include("components/layout/header") %>
+    <div id="container" class="p-8">
+      <div
+        id="pilot-card"
+        class="border-2 border-base-100 rounded-md md:flex shadow-sm"
+      >
+        <img
+          src="/images/pilots/pilot-<%= pilotInfo[0].id  %>.avif"
+          alt="pilot-<%= pilotInfo[0].id %>"
+          class="w-full h-60 bg-cover object-cover bg-left-top object-top md:w-1/3 md:rounded-bl-md rounded-tl-md rounded-tr-md md:rounded-tr-none"
+        />
+        <div id="details" class="mt-2 p-8 md:relative md:w-full">
+          <div class="flex justify-between">
+            <div>
+              <span class="text-lg mr-1"><%= pilotInfo[0].name %></span>
+              <span class="font-f1Bold text-2xl"
+                ><%= pilotInfo[0].surname %></span
+              >
+            </div>
+            <p
+              class="rounded-full bg-base-100 py-1 px-2 h-fit text-center text-secondary mt-0 md:absolute md:right-8 md:bottom-4 md:text-xl"
+            >
+              <%= pilotInfo[0].totalScore %> PTS
+            </p>
+          </div>
+          <p class="font-f1Bold text-sm mb-4">
+            <%= pilotInfo[0].roundResult.Constructor.name %>
+          </p>
+          <div>
+            <span class="text-sm mr-1">Date Of Birth:</span>
+            <span><%= pilotInfo[0].roundResult.Driver.dateOfBirth %></span>
+          </div>
+          <div>
+            <span class="text-sm mr-1">Nationality:</span>
+            <span><%= pilotInfo[0].roundResult.Driver.nationality %></span>
+          </div>
+          <span class="text-sm mr-1">Race Number:</span>
+          <span><%= pilotInfo[0].id %></span>
+        </div>
+      </div>
+      <div class="mt-8">
+        <p class="text-xl font-f1Black mb-2">Results per Round</p>
+        <div class="grid md:grid-cols-3 md:grid-flow-row gap-4">
+          <% for( let i = 0; i < pilotInfo.length; i++){ %>
+          <div
+            id="round-<%= pilotInfo[i].round %>"
+            class="border-2 border-base-100 p-8 rounded-md flex flex-col justify-between"
+          >
+            <div>
+              <p class="font-f1Bold mb-4"><%= pilotInfo[i].roundName %></p>
 
-    <% console.log(pilotInfo); %>
+              <div class="relative">
+                <span class="mr-1">Position:</span
+                ><span><%= pilotInfo[i].roundResult.position %></span>
+                <p
+                  class="absolute rounded-full bg-base-100 py-1 px-2 h-fit text-center text-secondary right-0 top-2"
+                >
+                  <%= pilotInfo[i].total %> PTS
+                </p>
+              </div>
+              <div>
+                <span class="mr-1">Status: </span>
+                <% if(pilotInfo[i].roundResult.status == "Finished"){ %>
+                <span><%= pilotInfo[i].roundResult.status %></span>
+                <% } else { %>
+                <span>Retired</span>
+                <% } %>
+              </div>
+              <% if( pilotInfo[i].fastestLapBonus != "0" ){ %>
+              <div class="flex justify-between items-baseline">
+                <span> Fastest Lap: </span>
+                <p
+                  class="rounded-full bg-base-100 py-1 px-2 h-fit text-center text-secondary"
+                >
+                  <%= pilotInfo[i].fastestLapBonus%> PTS
+                </p>
+              </div>
+              <% } %>
+              <div class="flex justify-between items-baseline">
+                <span>Position Gained/Lost</span>
+                <p
+                  class="rounded-full bg-base-100 py-1 px-2 h-fit text-center text-secondary mt-2"
+                >
+                  <%= pilotInfo[i].positionGainedBonus %> PTS
+                </p>
+              </div>
+            </div>
+            <div>
+              <p
+                class="rounded-full bg-base-100 py-1 px-2 h-fit text-center text-secondary mt-2"
+              >
+                <%= pilotInfo[i].total %> PTS
+              </p>
+            </div>
+          </div>
+
+          <% } %> <% console.log(pilotInfo[0]) %>
+        </div>
+      </div>
+    </div>
     <%- include("components/layout/footer") %>
   </body>
 </html>
