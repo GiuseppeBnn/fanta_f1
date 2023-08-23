@@ -990,6 +990,8 @@ async function getPilotsValues() {
     pilotsValues[i]["name"] = pilots[i].name;
     pilotsValues[i]["surname"] = pilots[i].surname;
     pilotsValues[i]["id"] = pilots[i].id;
+    pilotsValues[i]["team"] = pilotsAllRoundsResults[pilots[i].id][0].Results[0].Constructor.name;
+   
   }
   return pilotsValues;
 }
@@ -1303,7 +1305,7 @@ async function retrieveTeamPilotsInfo(teamId) {
   let teamPilots = await getMembers(teamId);
   let teamPilotsInfo = [];
   for (let i = 0; i < teamPilots.length; i++) {
-    let pilotPointsForRound = await retrievePilotAllBonuses(teamPilots[i]);
+    let pilotPointsForRound = await retrievePilotAllInfo(teamPilots[i]);
     teamPilotsInfo[i] = {};
     teamPilotsInfo[i] = pilotPointsForRound;
   }
