@@ -253,7 +253,11 @@ app.post("/team/create", requireAuth, async (req, res) => {
 });
 app.get("/pilot/:id", async (req, res) => {
     let pilotInfo = await db.retrievePilotAllInfo(req.params.id);
-    res.render("pilot", { pilotInfo: pilotInfo });   //TODO: pilot template
+    let isAuth = false;
+    if(req.session && req.session.userId){
+        isAuth = true;
+    }
+    res.render("pilot", { pilotInfo: pilotInfo, isAuth: isAuth });
 });
 
 /*
