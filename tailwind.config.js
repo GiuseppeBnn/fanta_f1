@@ -22,15 +22,15 @@ module.exports = {
       "base-100": "#EDEDED",
 
       "mercedes": "#6CD3BF",
-      "redbull": "#3671C6",
+      "red_bull": "#3671C6",
       "ferrari": "#F91536",
       "mclaren": "#F58020",
       "alpine": "#2293D1",
       "alphatauri": "#5E8FAA",
-      "astonmartin": "#358C75",
+      "aston_martin": "#358C75",
       "williams": "#37BEDD",
       "haas": "#B6BABD",
-      "alfaromeo": "#C92D4B",
+      "alfa": "#C92D4B",
 
     }
   },
