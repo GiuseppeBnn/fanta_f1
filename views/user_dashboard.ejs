@@ -10,10 +10,70 @@
     class="bg-content text-secondary font-f1Regular flex flex-col justify-between min-h-screen"
   >
     <%- include("components/layout/header") %>
-    <div class="flex flex-col md:flex-row justify-around items-baseline p-8">
-      <%if(teams.length > 0){ %>
-      <div id="standings" class="md:max-h-96 my-4 rounded-md w-full md:w-5/12">
-        <p class="text-lg font-medium">Global Top 5 Teams:</p>
+
+    <div
+      id="container"
+      class="p-10 grid md:grid-cols-2 md:grid-flow-row gap-12"
+    >
+      <% if (typeof(teamPilotsScore)!="undefined") { %>
+      <div id="round-info" class="md:flex">
+        <div class="mb-8">
+          <span class="font-f1Bold text-2xl"
+            >Round <%= teamPilotsScore[1].round %></span
+          >
+          <p class="font-f1Bold text-xl"><%= teamPilotsScore[1].roundName %></p>
+          <div id="round-details">
+            <p><%= teamPilotsScore[1].roundInfo.circuitName %></p>
+            <p>
+              Location: <%= teamPilotsScore[1].roundInfo.Location.locality %>
+            </p>
+            <p>Country: <%= teamPilotsScore[1].roundInfo.Location.country %></p>
+          </div>
+        </div>
+        <img src="/images/rounds/<%=
+        teamPilotsScore[1]["roundInfo"]["circuitId"] %>.png" alt=""
+        class="md:w-60 h-44 px-4 md:px-0"/>
+      </div>
+
+      <div id="race-results" class="">
+        <div class="grid grid-cols-4 font-f1Bold">
+          <p>Pos</p>
+          <p class="col-span-2">Pilot</p>
+          <p class="text-end col-start-4 pr-8 md:pr-12">PTS</p>
+        </div>
+        <div class="max-h-40 overflow-y-scroll md:pr-4">
+          <% for(let i = 0; i < lastRound.length; i++){ %>
+          <a href="/pilot/<%= lastRound[i].number %>">
+            <div
+              class="grid grid-cols-5 border-b-2 border-b-base-100 py-2 hover:bg-secondary hover:text-content hover:cursor-pointer rounded-sm pl-4 items-center"
+            >
+              <span><%= i+1 %></span>
+              <div class="col-span-2">
+                <span class="hidden md:inline md:mr-1"
+                  ><%= lastRound[i].Driver.givenName %></span
+                ><span class="font-f1Bold"
+                  ><%= lastRound[i].Driver.familyName %></span
+                >
+              </div>
+              <div
+                class="flex flex-row-reverse col-start-4 col-span-2 mr-2 items-center"
+              >
+                <p class="text-primary pl-2">></p>
+                <p
+                  class="text-xs rounded-full bg-base-100 p-2 text-center text-secondary w-fit"
+                >
+                  <%= lastRound[i].points %> PTS
+                </p>
+              </div>
+            </div>
+          </a>
+          <% } %>
+        </div>
+      </div>
+
+      <% } %> <%if(teams.length > 0){ %>
+      <div id="standings" class="md:max-h-96 rounded-md w-full">
+        <p class="text-lg font-medium pt-1">Global Top 5 Teams:</p>
         <% for(let i = 0; i < teams.length; i++){ %>
         <a href="/team/<%=teams[i].teamId%>">
           <div
@@ -37,11 +97,11 @@
         <% if(i >=5){break;} %> <%} %>
       </div>
       <%}else{ %>
-      <div id="empty" class="md:max-h-96 my-4 rounded-md w-full md:w-5/12">
+      <div id="empty" class="md:max-h-96 my-4 rounded-md w-full">
         <div class="w-full bg-content shadow-sm p-2 text-lg">No teams yet!</div>
       </div>
       <%} %> <% if(!hasTeam){ %>
-      <div class="md:flex md:flex-col md:justify-center w-full md:w-5/12">
+      <div class="md:flex md:flex-col md:justify-center w-full">
         <a href="/team/create" class="mx-auto">
           <div
             class="bg-primary text-content hover:cursor-pointer hover: font-bold py-2 px-6 rounded border-primary border-2 hover:bg-content hover:text-secondary"
@@ -51,32 +111,44 @@
         </a>
       </div>
       <% }else{ %>
-      <div class="my-8 rounded-md md:w-5/12 w-full" id="personalTeam">
-        <div class="flex justify-between">
-          <p class="text-lg font-medium"><%= team.teamName %>:</p>
-          <p class="text-sm font-medium mb-0"><%= team.score %> total points</p>
-        </div>
-        <% for(let i = 0; i < teamPilotsScore.length; i++){ %>
-        <a href="/pilot/<%= teamPilotsScore[i].id %>">
-          <div
-            id="<%= teamPilotsScore[i].id %>"
-            class="flex justify-between w-full hover:bg-secondary-focus hover:text-content hover:cursor-pointer rounded-sm shadow-sm p-2 text-lg gap-2"
-          >
-            <div class="flex justify-between w-full text-lg">
-              <div class="flex justify-between items-baseline gap-1">
-                <p class="font-f1Regular text-sm"><%= teamPilotsScore[i].name%></p>
-                <p class="font-f1Bold"><%= teamPilotsScore[i].surname %></p>
-              </div>
-              <p
-                class="text-xs rounded-full bg-base-100 p-2 text-center text-secondary"
-              >
-                <%= teamPilotsScore[i].totalScore %> PTS
-              </p>
-            </div>
-            <p class="text-primary">></p>
+      <div class="rounded-md w-full" id="personalTeam">
+        <div class="flex justify-between items-center">
+          <div>
+            <span class="text-lg mr-2">Your Team: </span>
+            <span class="text-lg font-f1Black"><%= team.teamName %></span>
           </div>
-        </a>
-        <% } %>
+
+          <p
+            class="rounded-full bg-base-100 p-2 text-center text-secondary w-fit"
+          >
+            <%= team.score %> PTS
+          </p>
+        </div>
+        <div class="max-h-40 overflow-y-scroll md:pr-4">
+          <% for(let i = 0; i < teamPilotsScore.length; i++){ %>
+          <a href="/pilot/<%= teamPilotsScore[i].id %>">
+            <div
+              id="<%= teamPilotsScore[i].id %>"
+              class="flex justify-between w-full hover:bg-secondary-focus hover:text-content hover:cursor-pointer rounded-sm shadow-sm p-2 text-lg gap-2"
+            >
+              <div class="flex justify-between w-full text-lg">
+                <div class="flex justify-between items-baseline gap-1">
+                  <p class="font-f1Regular text-sm">
+                    <%= teamPilotsScore[i].name%>
+                  </p>
+                  <p class="font-f1Bold"><%= teamPilotsScore[i].surname %></p>
+                </div>
+                <p
+                  class="text-xs rounded-full bg-base-100 p-2 text-center text-secondary"
+                >
+                  <%= teamPilotsScore[i].totalScore %> PTS
+                </p>
+              </div>
+              <p class="text-primary">></p>
+            </div>
+          </a>
+          <% } %>
+        </div>
         <a href="/team">
           <div
             class="bg-primary text-content hover:cursor-pointer py-2 px-6 rounded border-primary border-2 hover:bg-content hover:text-secondary w-fit h-auto mt-2"
