@@ -7,15 +7,13 @@ const pool = createPool();
 const maxCoinBudget = 2000;
 let pilotsNicks = {};
 let pilotsGlobalInfo = {};
-let allRoundResults = {};
+let allRoundResults = [];
 let pilotsAllRoundsResults = {};
 //trying caching of semistatic info
 
 
 let lastRoundNum;
-getLastRoundNumber().then((roundNum) => {
-  this.lastRoundNum = roundNum;
-});
+
 
 
 async function cachePilotsGlobalInfo() {
@@ -39,6 +37,7 @@ function createPool() {
 }
 
 const inizializeDatabase = async () => {
+  await setLastRoundNumber();
   await getPilotsNicks();
   await updateAllRoundsResultsCache();
   await updatePilotsAllRoundsResultsCache();
@@ -271,6 +270,10 @@ async function queryUser(username) {
       }
     );
   });
+}
+
+function retrieveLastRoundResults() {
+  return allRoundResults[lastRoundNum-1];
 }
 
 async function verifyCredentials(username, password) {
@@ -769,16 +772,14 @@ function weeklyUpdate(lastRoundNumber) {
 }
 
 async function retrieveAllRoundResults() {
-  let lastRoundNumber = await getLastRoundNumber();
-  for (let i = 1; i <= lastRoundNumber; i++) {
+  for (let i = 1; i <= parseInt(lastRoundNum); i++) {
     await updateRoundTotalScore(i);
   }
 }
-async function getLastRoundNumber() {
+async function setLastRoundNumber() {
   let lastRound = await axios.get('http://ergast.com/api/f1/current/last/results.json');
-  //console.log(lastRound.data);
   let lastRoundNumber = lastRound.data.MRData.RaceTable.round;
-  return lastRoundNumber;
+  lastRoundNum = lastRoundNumber;
 }
 
 async function getTeamsId() {
@@ -1282,6 +1283,8 @@ async function retrievePilotLastBonuses(pilotId) {
     pilotPointsForRound["fastestLapBonus"] = roundScore[2];
     pilotPointsForRound["total"] = parseInt(roundScore[0]) + parseInt(roundScore[1]) + parseInt(roundScore[2]);
     pilotPointsForRound["round"] = pilotStrippedScore.length;
+    pilotPointsForRound["roundName"]=pilotsAllRoundsResults[pilotId][pilotsAllRoundsResults[pilotId].length-1]["raceName"];
+    pilotPointsForRound["roundInfo"]=pilotsAllRoundsResults[pilotId][pilotsAllRoundsResults[pilotId].length-1]["Circuit"];
     pilotPointsForRound["totalScore"] = pilotTotalScore;
   }
 
@@ -1521,4 +1524,4 @@ function insertTestUsers() {
 
 
 //esporta modulo
-module.exports = { retrievePilotAllInfo,retrievePilotLastBonuses, updatePilotCoins, searchUsers, getUsersList, getTeamsList, deleteUser, deleteTeam, retrieveTeamPilotsLastInfo, getTeamsSinglePilotsPoints, getPilotTotalScore, getPilotScore, checkTeamLegality, maxCoinBudget, calculateTeamScore, getPilotsValues, getUserId, hasTeam, retrieveAllRoundResults, getBonusTable, weeklyUpdate, updateRoundTotalScore, getBonusTable, getTeams, getTeam, inizializeDatabase, insertUser, verifyAdminAccess, verifyCredentials, queryUser, getPilots, updateScore, insertTeam, getTeams };
+module.exports = { retrieveLastRoundResults,retrievePilotAllInfo,retrievePilotLastBonuses, updatePilotCoins, searchUsers, getUsersList, getTeamsList, deleteUser, deleteTeam, retrieveTeamPilotsLastInfo, getTeamsSinglePilotsPoints, getPilotTotalScore, getPilotScore, checkTeamLegality, maxCoinBudget, calculateTeamScore, getPilotsValues, getUserId, hasTeam, retrieveAllRoundResults, getBonusTable, weeklyUpdate, updateRoundTotalScore, getBonusTable, getTeams, getTeam, inizializeDatabase, insertUser, verifyAdminAccess, verifyCredentials, queryUser, getPilots, updateScore, insertTeam, getTeams };
