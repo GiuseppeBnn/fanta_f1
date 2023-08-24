@@ -99,16 +99,22 @@ app.post('/login', async (req, res) => {
 app.get('/dashboard', requireAuth, async (req, res) => {
 
     let isAuth = true;
+
+    if(req.session.role === "admin"){
+        return res.redirect("/admin/dashboard");
+    }
+
     let userId = req.session.userId;
     let hasTeam = await db.hasTeam(userId);
     let teams = await db.getTeams();
+    let lastRound = db.retrieveLastRoundResults();
     if (hasTeam) {
         let team = await db.getTeam(userId);
         let teamPilotsScore =await db.retrieveTeamPilotsLastInfo(userId);
-        res.render('user_dashboard', { team: team, teams: teams, hasTeam: hasTeam, isAuth: isAuth, teamPilotsScore: teamPilotsScore });
+        res.render('user_dashboard', { team: team, teams: teams, hasTeam: hasTeam, isAuth: isAuth, teamPilotsScore: teamPilotsScore, lastRound: lastRound.Results });
     }
     else {
-        res.render('user_dashboard', { teams: teams, hasTeam: hasTeam, team: null, isAuth: isAuth });
+        res.render('user_dashboard', { teams: teams, hasTeam: hasTeam, team: null, isAuth: isAuth, lastRound: lastRound.Results });
     }
 
 });
