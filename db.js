@@ -992,6 +992,7 @@ async function getPilotsValues() {
     pilotsValues[i]["surname"] = pilots[i].surname;
     pilotsValues[i]["id"] = pilots[i].id;
     pilotsValues[i]["team"] = pilotsAllRoundsResults[pilots[i].id][0].Results[0].Constructor.name;
+    pilotsValues[i]["constructorId"] = pilotsAllRoundsResults[pilots[i].id][0].Results[0].Constructor.constructorId;
    
   }
   return pilotsValues;
@@ -1276,6 +1277,7 @@ async function retrievePilotLastBonuses(pilotId) {
     let roundScore = pilotStrippedScore[pilotStrippedScore.length - 2].split(",");
     pilotPointsForRound = {};
     pilotPointsForRound["id"] = pilotId;
+    pilotPointsForRound["constructor"]=pilotsAllRoundsResults[pilotId][pilotsAllRoundsResults[pilotId].length-1]["Results"][0].Constructor;
     pilotPointsForRound["name"] = pilotsGlobalInfo[pilotId].givenName;
     pilotPointsForRound["surname"] = pilotsGlobalInfo[pilotId].familyName;
     pilotPointsForRound["points"] = roundScore[0];
