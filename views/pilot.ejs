@@ -34,10 +34,16 @@
               <%= pilotInfo[0].totalScore %> PTS
             </p>
           </div>
-          <p class="font-f1Bold text-sm mb-4">
-            <%= pilotInfo[0].roundResult.Constructor.name %>
-          </p>
-          <div>
+          <div class="flex items-center">
+            <p
+              id="team-color-<%= pilotInfo[0].roundResult.Constructor.constructorId %>"
+              class="hidden"
+            ></p>
+            <p class="font-f1Bold text-sm">
+              <%= pilotInfo[0].roundResult.Constructor.name %>
+            </p>
+          </div>
+          <div class="mt-4">
             <span class="text-sm mr-1">Date Of Birth:</span>
             <span><%= pilotInfo[0].roundResult.Driver.dateOfBirth %></span>
           </div>
@@ -110,5 +116,36 @@
       </div>
     </div>
     <%- include("components/layout/footer") %>
+
+    <div class="hidden bg-ferrari"></div>
+    <div class="hidden bg-mercedes"></div>
+    <div class="hidden bg-red_bull"></div>
+    <div class="hidden bg-mclaren"></div>
+    <div class="hidden bg-aston_martin"></div>
+    <div class="hidden bg-alpine"></div>
+    <div class="hidden bg-haas"></div>
+    <div class="hidden bg-alphatauri"></div>
+    <div class="hidden bg-williams"></div>
+    <div class="hidden bg-alfa"></div>
+
+    <script>
+      function setTeamColors() {
+        const pilots = document.querySelectorAll("p[id^='team-color-']");
+        pilots.forEach((pilot) => {
+          const teamId = pilot.id.split("-")[2];
+          pilot.classList.add(
+            "bg-" + teamId,
+            "w-1.5",
+            "h-4",
+            "rounded-sm",
+            "mr-1"
+          );
+          pilot.classList.remove("hidden");
+          pilot.innerHTML = " ";
+        });
+      }
+
+      setTeamColors();
+    </script>
   </body>
 </html>
