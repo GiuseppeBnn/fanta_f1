@@ -15,84 +15,110 @@
       <p class="font-f1Bold">Total Score: <%= team.score %></p>
       <div class="grid gap-4 md:grid-flow-row md:grid-cols-3">
         <% for( let i = 0; i < teamPilotsScore.length; i++){ %>
-        <div class="flex flex-col" id="<%= teamPilotsScore[i].id %>">
-          <img
-            src="/images/pilots/pilot-<%= teamPilotsScore[i].id  %>.avif"
-            alt="pilot-<%= teamPilotsScore[i].id %>"
-            class="w-full h-60 bg-cover object-cover bg-left-top object-top"
-          />
+        <a href="/pilot/<%= teamPilotsScore[i].id %>">
+          <div class="flex flex-col  hover:cursor-pointer border-2 border-base-100 rounded-t-md" id="<%= teamPilotsScore[i].id %>">
+            <img
+              src="/images/pilots/pilot-<%= teamPilotsScore[i].id  %>.avif"
+              alt="pilot-<%= teamPilotsScore[i].id %>"
+              class="w-full h-60 bg-cover object-cover bg-left-top object-top"
+            />
 
-          <div class="p-4 shadow-md rounded-b-sm h-[212px]">
-            <div class="flex justify-between mb-4">
-              <div>
-                <span class="font-f1Regular text-sm">
-                  <%= teamPilotsScore[i].name %>
-                </span>
-                <span class="font-f1Bold">
-                  <%= teamPilotsScore[i].surname %>
-                </span>
-              </div>
-              <p
-                class="text-xs rounded-full bg-base-100 py-1 px-2 h-fit text-center text-secondary"
-              >
-                <%= teamPilotsScore[i].totalScore %> PTS
-              </p>
-            </div>
-            
-            <div class="text-sm">
-              <p class="mb-2">Last Round Result</p>
-              <div class="flex justify-between items-baseline mb-1">
-                <p>
-                  Final Position
-                </p>
+            <div class="p-4 shadow-md rounded-b-sm h-[212px]">
+              <div class="flex justify-between items-center mb-4">
+                <div class="flex items-center">
+                  <p
+                    id="team-color-<%= teamPilotsScore[i].constructor.constructorId %>"
+                    class="inline-block"
+                  ></p>
+                  <span class="font-f1Regular text-sm">
+                    <%= teamPilotsScore[i].name %>
+                  </span>
+                  <span class="font-f1Bold">
+                    <%= teamPilotsScore[i].surname %>
+                  </span>
+                </div>
                 <p
-                  class="text-xs rounded-full bg-base-100 py-1 px-2 text-center text-secondary"
+                  class="text-xs rounded-full bg-base-100 py-1 px-2 h-fit text-center text-secondary"
                 >
-                  <%= teamPilotsScore[i]["points"] %>
-                  PTS 
+                  <%= teamPilotsScore[i].totalScore %> PTS
                 </p>
               </div>
-              <% if(
-              teamPilotsScore[i]["fastestLapBonus"] !=
-              "0" ){ %>
-              <div class="flex justify-between items-baseline mb-1">
-                <p>Fastest Lap</p>
-                <p
-                  class="text-xs rounded-full bg-base-100 py-1 px-2 text-center text-secondary"
-                >
-                  <%=
-                  teamPilotsScore[i]["fastestLapBonus"]
-                  %> PTS
-                </p>
-              </div>
-              <% } %>
-              <div class="flex justify-between items-baseline mb-1">
-                <p>Position Gained</p>
-                <p
-                  class="text-xs rounded-full bg-base-100 py-1 px-2 text-center text-secondary"
-                >
-                  <%=
-                  teamPilotsScore[i]["positionGainedBonus"]
-                  %> PTS
-                </p>
-              </div>
-              <div class="flex justify-between items-baseline mb-1">
-                <p class="text-primary">Total</p>
-                <p
-                  class="text-xs rounded-full bg-base-100 py-1 px-2 text-center text-secondary"
-                >
-                  <%= teamPilotsScore[i]["total"] %>
-                  PTS
-                </p>
+
+              <div class="text-sm">
+                <p class="mb-2">Last Round Result</p>
+                <div class="flex justify-between items-baseline mb-1">
+                  <p>Final Position</p>
+                  <p
+                    class="text-xs rounded-full bg-base-100 py-1 px-2 text-center text-secondary"
+                  >
+                    <%= teamPilotsScore[i]["points"] %> PTS
+                  </p>
+                </div>
+                <% if( teamPilotsScore[i]["fastestLapBonus"] != "0" ){ %>
+                <div class="flex justify-between items-baseline mb-1">
+                  <p>Fastest Lap</p>
+                  <p
+                    class="text-xs rounded-full bg-base-100 py-1 px-2 text-center text-secondary"
+                  >
+                    <%= teamPilotsScore[i]["fastestLapBonus"] %> PTS
+                  </p>
+                </div>
+                <% } %>
+                <div class="flex justify-between items-baseline mb-1">
+                  <p>Position Gained</p>
+                  <p
+                    class="text-xs rounded-full bg-base-100 py-1 px-2 text-center text-secondary"
+                  >
+                    <%= teamPilotsScore[i]["positionGainedBonus"] %> PTS
+                  </p>
+                </div>
+                <div class="flex justify-between items-baseline mb-1">
+                  <p class="text-primary">Total</p>
+                  <p
+                    class="text-xs rounded-full bg-base-100 py-1 px-2 text-center text-secondary"
+                  >
+                    <%= teamPilotsScore[i]["total"] %> PTS
+                  </p>
+                </div>
               </div>
             </div>
           </div>
-          
-        </div>
+        </a>
         <% } %>
       </div>
     </div>
 
     <%- include("components/layout/footer") %>
+
+    <div class="hidden bg-ferrari"></div>
+    <div class="hidden bg-mercedes"></div>
+    <div class="hidden bg-red_bull"></div>
+    <div class="hidden bg-mclaren"></div>
+    <div class="hidden bg-aston_martin"></div>
+    <div class="hidden bg-alpine"></div>
+    <div class="hidden bg-haas"></div>
+    <div class="hidden bg-alphatauri"></div>
+    <div class="hidden bg-williams"></div>
+    <div class="hidden bg-alfa"></div>
+
+    <script>
+      function setTeamColors() {
+        const pilots = document.querySelectorAll("p[id^='team-color-']");
+        pilots.forEach((pilot) => {
+          const teamId = pilot.id.split("-")[2];
+          pilot.classList.add(
+            "bg-" + teamId,
+            "w-1.5",
+            "h-4",
+            "rounded-sm",
+            "mr-1"
+          );
+          pilot.classList.remove("hidden");
+          pilot.innerHTML = " ";
+        });
+      }
+
+      setTeamColors();
+    </script>
   </body>
 </html>
