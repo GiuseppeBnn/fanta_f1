@@ -55,7 +55,13 @@
               </div>
               <div>
                 <%= pilots[i].name %> <%= pilots[i].surname %>
-                <p class="text-sm font-medium"><%=pilots[i].team%></p>
+                <div class="flex items-center">
+                  <p
+                    id="team-color-<%= pilots[i].constructorId %>"
+                    class="inline"
+                  ></p>
+                  <span class="text-sm font-medium"><%=pilots[i].team%></span>
+                </div>
                 <p class="text-sm font-semibold text-primary">
                   <%= pilots[i].value %> coins
                 </p>
@@ -175,6 +181,24 @@
           errorN.innerHTML = "";
         }
       });
+
+      function setTeamColors() {
+        const pilots = document.querySelectorAll("p[id^='team-color-']");
+        pilots.forEach((pilot) => {
+          const teamId = pilot.id.split("-")[2];
+          pilot.classList.add(
+            "bg-" + teamId,
+            "w-1.5",
+            "h-4",
+            "rounded-sm",
+            "mr-1"
+          );
+          pilot.classList.remove("hidden");
+          pilot.innerHTML = " ";
+        });
+      }
+
+      setTeamColors();
     </script>
   </body>
 </html>
