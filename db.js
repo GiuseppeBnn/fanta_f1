@@ -41,9 +41,7 @@ const inizializeDatabase = async () => {
   await newSeasonCleanup();
   await inizializePilotsTable();
   await insertPilots();
-
-  //await createPointsTable();
-  //await populatePointsTable();
+  
   await createUsersTable();
   await insertCoins();
   await createTeamTable();
@@ -455,30 +453,6 @@ async function getTeams() {
     );
   });
 }
-
-async function createBonusTable() {    //da rimuovere
-  return new Promise((resolve, reject) => {
-    pool.execute(
-      `
-      CREATE TABLE IF NOT EXISTS bonus (
-        driverId INT PRIMARY KEY,
-        positionGainedBonus INT,
-        fastestLapBonus INT,
-        UNIQUE (driverId))
-      `,
-      (err) => {
-        if (err) {
-          console.error("Errore durante la creazione della tabella bonus:", err);
-          reject(err);
-        } else {
-          //console.log("Tabella dei bonus creata con successo!");
-          resolve(true);
-        }
-      }
-    );
-  })
-}
-
 function calculateBonus(lastRoundResult) {
   let positionGainedBonus = calculatePositionGainedBonus(lastRoundResult);
   let fastestLapBonus = calculateFastestLapBonus(lastRoundResult);
