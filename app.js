@@ -145,31 +145,31 @@ app.post('/change/values', requireAdmin, async (req, res) => {
 app.post('/admin/remove-user', requireAdmin, async (req, res) => {
     let userId = req.body.userId;
     let deleted = await db.deleteUser(userId);
+    const pilotValues = await db.getPilotsValues();
     if (deleted) {
-        return res.render('admin_dashboard', { isAuth: true, isAdmin: true, userInfo: "User " + userId + " and team deleted successfully" });
+        return res.render('admin_dashboard', { isAuth: true, isAdmin: true, userInfo: "User " + userId + " and team deleted successfully", pilotValues: pilotValues });
     }
     else {
-        return res.render('admin_dashboard', { isAuth: true, isAdmin: true, userError: "Error while deleting user" });
+        return res.render('admin_dashboard', { isAuth: true, isAdmin: true, userError: "Error while deleting user", pilotValues: pilotValues });
     }
 });
 app.post('/admin/remove-team', requireAdmin, async (req, res) => {
     let teamId = req.body.teamId;
     let deleted = await db.deleteTeam(teamId);
+    const pilotValues = await db.getPilotsValues();
     if (deleted) {
-        return res.render('admin_dashboard', { isAuth: true, isAdmin: true, teamInfo: "Team " + teamId + " deleted successfully" });
+        return res.render('admin_dashboard', { isAuth: true, isAdmin: true, teamInfo: "Team " + teamId + " deleted successfully", pilotValues: pilotValues });
     }
     else {
-        return res.render('admin_dashboard', { isAuth: true, isAdmin: true, teamError: "Error while deleting team" });
+        return res.render('admin_dashboard', { isAuth: true, isAdmin: true, teamError: "Error while deleting team", pilotValues: pilotValues });
     }
 });
 
 app.post('/admin/users', requireAdmin, async (req, res) => {
-    console.log(req.body);
     let offset = req.body.offset;
     let limit = req.body.limit;
     let users = await db.getUsersList(offset, limit);
     return res.json(users);
-
 });
 
 app.get("/admin/search-users/:query", requireAdmin, async (req, res) => {
