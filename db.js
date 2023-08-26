@@ -32,24 +32,24 @@ function createPool() {
 }
 
 const inizializeDatabase = async () => {
+  //await newSeasonCleanup();
+
   await setLastRoundNumber();
   await getPilotsNicks();
   await updateAllRoundsResultsCache();
   await updatePilotsAllRoundsResultsCache();
   await cachePilotsGlobalInfo();
 
-  await newSeasonCleanup();
   await inizializePilotsTable();
   await insertPilots();
   
   await createUsersTable();
   await insertCoins();
   await createTeamTable();
-  await createBonusTable();
   await retrieveAllRoundResults();
-  await insertTestStandings();
+  //await insertTestStandings();
 
-  insertTestUsers();
+  //insertTestUsers();
 
 };
 
