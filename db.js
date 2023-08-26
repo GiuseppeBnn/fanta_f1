@@ -9,12 +9,7 @@ let pilotsNicks = {};
 let pilotsGlobalInfo = {};
 let allRoundResults = [];
 let pilotsAllRoundsResults = {};
-//trying caching of semistatic info
-
-
 let lastRoundNum;
-
-
 
 async function cachePilotsGlobalInfo() {
   let pilots = await getPilots();
@@ -46,9 +41,9 @@ const inizializeDatabase = async () => {
   await newSeasonCleanup();
   await inizializePilotsTable();
   await insertPilots();
-  //TODO: creare tabella dei team
-  await createPointsTable();
-  await populatePointsTable();
+
+  //await createPointsTable();
+  //await populatePointsTable();
   await createUsersTable();
   await insertCoins();
   await createTeamTable();
@@ -124,58 +119,6 @@ function insertPilots() {
   });
 }
 
-async function createPointsTable() {
-  return new Promise((resolve, reject) => {
-    pool.execute(
-      `
-            CREATE TABLE IF NOT EXISTS points (
-              position INT PRIMARY KEY,
-              driver_name VARCHAR(255) NOT NULL,
-              points INT NOT NULL,
-              wins INT NOT NULL,
-              driverId INT NOT NULL,
-              UNIQUE (driverId),
-              UNIQUE (position))
-            `,
-      (err) => {
-        if (err) {
-          console.error("Errore durante la creazione della tabella:", err);
-          reject(err);
-        } else {
-          //console.log("Tabella dei punti creata con successo!");
-          resolve(true);
-        }
-      }
-    );
-  });
-}
-
-// funzione che crea e aggiorna la tabella dei punti mondiale da ergast
-async function populatePointsTable() {
-  const url = "http://ergast.com/api/f1/2023/driverStandings.json";
-  axios.get(url).then((response) => {
-    const standings = response.data.MRData.StandingsTable.StandingsLists[0].DriverStandings;
-    standings.forEach((standing) => {
-      if (standing.Driver.permanentNumber == 33) standing.Driver.permanentNumber = 1;
-      pool.execute(
-        `
-            INSERT INTO points (position, driver_name, points, wins, driverId)
-            VALUES (?,?,?,?,?)
-            ON DUPLICATE KEY UPDATE driverId = VALUES(driverId), driver_name = VALUES(driver_name), points = VALUES(points), wins = VALUES(wins)
-            `,
-        [standing.position, standing.Driver.givenName + " " + standing.Driver.familyName, standing.points, standing.wins, standing.Driver.permanentNumber],
-        (err) => {
-          if (err) {
-            console.error("Errore durante l'inserimento dei dati:", err);
-          } else {
-            //console.log("Dati inseriti con successo!");
-          }
-        }
-      );
-    });
-  });
-};
-
 //crea tabella autenticazione utenti
 function createUsersTable() {
   pool.execute(
@@ -204,14 +147,14 @@ function createUsersTable() {
 
   function insertAdmin() {
     //insert if not exist admin user
-    argon2.hash("9899").then((hash) => {
+    argon2.hash("admin").then((hash) => {
       const criptedPassword = hash;
       pool.execute(
         `
       INSERT INTO users (username, password, role)
       VALUES (?,?,?)
       ON DUPLICATE KEY UPDATE username = VALUES(username), password = VALUES(password), role = VALUES(role)    `,
-        ["giusbon", criptedPassword, "admin"],
+        ["admin", criptedPassword, "admin"],
         (err) => {
           if (err) {
             console.error("Errore durante l'inserimento dei dati:", err);
@@ -513,7 +456,7 @@ async function getTeams() {
   });
 }
 
-async function createBonusTable() {
+async function createBonusTable() {    //da rimuovere
   return new Promise((resolve, reject) => {
     pool.execute(
       `
@@ -582,33 +525,6 @@ async function getRoundResult(roundNumber) {
   return RoundResult.data;
 }
 
-async function updateBonusTable(lastRoundResult) {
-  let positionGainedBonus = calculatePositionGainedBonus(lastRoundResult);
-  let fastestLapBonus = calculateFastestLapBonus(lastRoundResult);
-  let bonus = {};
-  for (let i = 0; i < Object.keys(positionGainedBonus).length; i++) {
-    let driverId = Object.keys(positionGainedBonus)[i];
-    bonus[driverId] = positionGainedBonus[driverId] + fastestLapBonus[driverId];
-  }
-  for (let i = 0; i < Object.keys(bonus).length; i++) {
-    let driverId = Object.keys(bonus)[i];
-    pool.execute(
-      `
-      INSERT INTO bonus (driverId, positionGainedBonus, fastestLapBonus)
-      VALUES (?,?,?)
-      ON DUPLICATE KEY UPDATE positionGainedBonus = VALUES(positionGainedBonus), fastestLapBonus = VALUES(fastestLapBonus)
-      `,
-      [driverId, positionGainedBonus[driverId], fastestLapBonus[driverId]],
-      (err) => {
-        if (err) {
-          console.error("Errore durante l'aggiornamento del punteggio:", err);
-        } else {
-          //console.log("Punteggio aggiornato con successo!");
-        }
-      }
-    );
-  }
-}
 function calculateRacePointsScore(lastRoundResult) {
   let finalPositionScore = {};
   let results = lastRoundResult.MRData.RaceTable.Races[0].Results;
@@ -620,7 +536,7 @@ function calculateRacePointsScore(lastRoundResult) {
   return finalPositionScore;
 }
 
-async function updateScore(lastRoundResult) {
+async function updateScore(lastRoundResult) {   
   let lastRaceScore = calculateRacePointsScore(lastRoundResult);
   let bonus = calculateBonus(lastRoundResult);
   await updatePilotsScore(lastRaceScore, lastRoundResult);
@@ -729,7 +645,7 @@ function sumScore(score) {
   return totalScore;
 }
 
-async function getPilotTotalScore(pilotId) {
+async function getPilotTotalScore(pilotId) {    //ok
   return new Promise((resolve, reject) => {
     pool.execute(
       `
@@ -760,8 +676,7 @@ async function getPilotTotalScore(pilotId) {
 
 
 async function updateRoundTotalScore(roundNumber) {
-  let roundResult = await getRoundResult(roundNumber);    //da migliorare
-  await updateBonusTable(roundResult);
+  let roundResult = await getRoundResult(roundNumber); 
   await updateScore(roundResult);
 }
 
@@ -805,55 +720,7 @@ async function getTeamsId() {
   });
 }
 
-
-
-/*async function getCurrentScore() {    // deprecata
-  return new Promise((resolve, reject) => {
-    pool.execute(
-      `
-      SELECT teamId, score FROM teams
-        `,
-      (err, result) => {
-        if (err) {
-          console.error("Errore durante la ricerca dei team:", err);
-          reject(err);
-        } else {
-          if (result.length > 0) {
-            console.log("Team trovati con successo!");
-            resolve(result);
-          } else {
-            console.log("Team non presenti nel database!");
-            resolve(false);
-          }
-        }
-      }
-    );
-  });
-}*/
-
-async function getBonusTable() {
-  return new Promise((resolve, reject) => {
-    pool.execute(
-      `
-      SELECT * FROM bonus
-        `,
-      (err, result) => {
-        if (err) {
-          console.error("Errore durante la ricerca del bonus:", err);
-          reject(err);
-        } else {
-          if (result.length > 0) {
-            resolve(result);
-          } else {
-            console.log("Bonus non presenti nel database!");
-            resolve(false);
-          }
-        }
-      }
-    );
-  });
-}
-
+ 
 async function hasTeam(userId) {
   return new Promise((resolve, reject) => {
     pool.execute(
@@ -1010,94 +877,6 @@ async function calculateTeamScore(pilots) {   //inutile
   return score;
 }
 
-async function getPilotPoints(pilotId) {  //inutile
-  return new Promise((resolve, reject) => {
-    pool.execute(
-      `
-      SELECT * FROM points
-      WHERE driverId = ?
-        `,
-      [pilotId],
-      (err, result) => {
-        if (err) {
-          console.error("Errore durante la ricerca dei punti del pilota:", err);
-          reject(err);
-        } else {
-          if (result.length > 0) {
-            resolve(result[0].points);
-          } else {
-            console.log("Punti del pilota non presenti nel database!");
-            resolve(false);
-          }
-        }
-      }
-    );
-  });
-}
-
-
-async function getMembersInfo(teamId) {  //inutile
-  return new Promise((resolve, reject) => {
-    pool.execute(
-      `
-      SELECT idPilots FROM teams
-      WHERE teamId = ?
-        `,
-      [teamId],
-      async (err, result) => {
-        if (err) {
-          console.error("Errore durante la ricerca dei membri del team:", err);
-          reject(err);
-        } else {
-          if (result.length > 0) {
-            //console.log("Membri del team trovati con successo!");
-            let membersArray = result[0].idPilots.split(",");
-            let membersData = [];
-            for (let i = 0; i < membersArray.length; i++) {
-              membersData[i] = {};
-              //console.log("membersArray[i]:", membersArray[i]);
-              membersData[i] = await getPilotInfo(membersArray[i]);
-            }
-            resolve(membersData);
-          } else {
-            console.log("Membri del team non presenti nel database!");
-            resolve(false);
-          }
-        }
-
-      }
-    );
-
-  });
-}
-
-
-async function getPilotBonus(pilotId) {  //inutile
-  return new Promise((resolve, reject) => {
-    pool.execute(
-      `
-      SELECT * FROM bonus
-      WHERE driverId = ?
-        `,
-      [pilotId],
-      (err, result) => {
-        if (err) {
-          console.error("Errore durante la ricerca del bonus del pilota:", err);
-          reject(err);
-        } else {
-          if (result.length > 0) {
-            resolve(result[0]);
-          } else {
-            console.log("Bonus del pilota non presenti nel database!");
-            resolve(false);
-          }
-        }
-      }
-    );
-  });
-}
-
-
 async function updatePilotsAllRoundsResultsCache() {
   let pilots = await getPilotsId();
   for (let i = 0; i < pilots.length; i++) {
@@ -1225,20 +1004,6 @@ async function getPilotAllRoundsResults(pilotNick) {
 
 }
 
-async function getPilotLastRoundResult(pilotId) {
-  let pilotNick = pilotsNicks[pilotId];
-  const url = "http://ergast.com/api/f1/current/last/drivers/" + pilotNick + "results.json";
-  try {
-    const response = await axios.get(url);
-    const driversData = response.data.MRData.RaceTable.Races;
-    return driversData;
-  } catch (error) {
-    console.error("Errore durante la richiesta:", error.message);
-  }
-}
-
-
-
 async function retrievePilotAllInfo(pilotId) {
   let pilotScore = await getPilotScore(pilotId);
   let pilotTotalScore = sumScore(pilotScore);
@@ -1300,17 +1065,6 @@ async function retrieveTeamPilotsLastInfo(teamId) {
   let teamPilotsInfo = [];
   for (let i = 0; i < teamPilots.length; i++) {
     let pilotPointsForRound = await retrievePilotLastBonuses(teamPilots[i]);
-    teamPilotsInfo[i] = {};
-    teamPilotsInfo[i] = pilotPointsForRound;
-  }
-  return teamPilotsInfo;
-}
-
-async function retrieveTeamPilotsInfo(teamId) {
-  let teamPilots = await getMembers(teamId);
-  let teamPilotsInfo = [];
-  for (let i = 0; i < teamPilots.length; i++) {
-    let pilotPointsForRound = await retrievePilotAllInfo(teamPilots[i]);
     teamPilotsInfo[i] = {};
     teamPilotsInfo[i] = pilotPointsForRound;
   }
@@ -1458,34 +1212,6 @@ async function getUsersList(offset, limit) {
     );
   });
 }
-async function getTeamsList(offset, limit) {
-  return new Promise((resolve, reject) => {
-    pool.execute(
-      `
-      SELECT * FROM teams
-      LIMIT ? OFFSET ?
-        `,
-      [limit, offset],
-      (err, result) => {
-        if (err) {
-          console.error("Errore durante la ricerca dei team:", err);
-          reject(err);
-        } else {
-          if (result.length > 0) {
-            //console.log("Team trovati con successo!");
-            resolve(result);
-          } else {
-            console.log("Team non presenti nel database!");
-            resolve(false);
-          }
-        }
-      }
-    );
-  });
-}
-
-// TODO async function changePilotsValues
-
 
 async function searchUsers(username) {
   return new Promise((resolve, reject) => {
@@ -1513,9 +1239,6 @@ async function searchUsers(username) {
 
   });
 }
-
-
-
 function insertTestUsers() {
   for (let i = 0; i < 10; i++) {
     insertUser("testUser" + i, "testPassword" + i);
@@ -1524,6 +1247,5 @@ function insertTestUsers() {
 
 
 
-
 //esporta modulo
-module.exports = { retrieveLastRoundResults,retrievePilotAllInfo,retrievePilotLastBonuses, updatePilotCoins, searchUsers, getUsersList, getTeamsList, deleteUser, deleteTeam, retrieveTeamPilotsLastInfo, getTeamsSinglePilotsPoints, getPilotTotalScore, getPilotScore, checkTeamLegality, maxCoinBudget, calculateTeamScore, getPilotsValues, getUserId, hasTeam, retrieveAllRoundResults, getBonusTable, weeklyUpdate, updateRoundTotalScore, getBonusTable, getTeams, getTeam, inizializeDatabase, insertUser, verifyAdminAccess, verifyCredentials, queryUser, getPilots, updateScore, insertTeam, getTeams };
+module.exports = { retrieveLastRoundResults,retrievePilotAllInfo,retrievePilotLastBonuses, updatePilotCoins, searchUsers, getUsersList, deleteUser, deleteTeam, retrieveTeamPilotsLastInfo, getTeamsSinglePilotsPoints, getPilotTotalScore, getPilotScore, checkTeamLegality, maxCoinBudget, calculateTeamScore, getPilotsValues, getUserId, hasTeam, retrieveAllRoundResults, weeklyUpdate, updateRoundTotalScore, getTeams, getTeam, inizializeDatabase, insertUser, verifyAdminAccess, verifyCredentials, queryUser, getPilots, updateScore, insertTeam, getTeams };
