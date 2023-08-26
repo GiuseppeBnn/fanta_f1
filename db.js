@@ -34,14 +34,15 @@ function createPool() {
 const inizializeDatabase = async () => {
   //await newSeasonCleanup();
 
+  await inizializePilotsTable();
+  await insertPilots();
+
+
   await setLastRoundNumber();
   await getPilotsNicks();
   await updateAllRoundsResultsCache();
   await updatePilotsAllRoundsResultsCache();
   await cachePilotsGlobalInfo();
-
-  await inizializePilotsTable();
-  await insertPilots();
   
   await createUsersTable();
   await insertCoins();
@@ -54,7 +55,26 @@ const inizializeDatabase = async () => {
 };
 
 
+async function pilotsScoreCleanup() {
+  return new Promise((resolve, reject) => {
+    pool.execute(
+      `DROP TABLE IF EXISTS pilots`,
+      (err) => {
+        if (err) {
+          console.error("Errore durante la cancellazione della tabella:", err);
+          reject(err);
+        } else {
+          resolve(true);
+        }
+      }
+    );
+  });
+}
+
+
+
 async function inizializePilotsTable() {
+  let waitCleanup = await pilotsScoreCleanup();
   return new Promise((resolve, reject) => {
     pool.execute(
       `CREATE TABLE IF NOT EXISTS pilots (
@@ -356,7 +376,6 @@ async function updatePilotCoins(newScore) {    //dove newScore è un oggetto con
     resolve(true);
   });
 }
-
 
 async function createTeamTable() {
   return new Promise((resolve, reject) => {
@@ -660,7 +679,25 @@ function weeklyUpdate(lastRoundNumber) {
   updatePilotsAllRoundsResultsCache();
 }
 
+async function teamsScoreCleanup() {
+  return new Promise((resolve, reject) => {
+    pool.execute(
+      `UPDATE teams SET score = '0'`,
+      (err) => {
+        if (err) {
+          console.error("Errore durante la cancellazione della tabella:", err);
+          reject(err);
+        } else {
+          resolve(true);
+        }
+      }
+    );
+  });
+}
+
+
 async function retrieveAllRoundResults() {
+  let waitCleanup = await teamsScoreCleanup();
   for (let i = 1; i <= parseInt(lastRoundNum); i++) {
     await updateRoundTotalScore(i);
   }
