@@ -5,7 +5,7 @@ To install the project, you need to have installed:
 - npm 6.14.0 or higher
 - MySQL 8.0 or higher
 
-To install the project, you need to run the following commands:
+To install and run the project, you need to run the following commands:
 
 ```bash
 npm install && npm run build
