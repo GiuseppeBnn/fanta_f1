@@ -331,7 +331,8 @@ async function insertCoins() {
     "55": 900,
     "63": 800,
     "77": 80,
-    "81": 450
+    "81": 450,
+    "40": 10,
   };
   let wait = await createCoinsTable();
   if (wait) {
@@ -782,7 +783,7 @@ async function getUserId(username) {
   });
 }
 
-cron.schedule('0 0 0 * * 1', async () => {    // ogni lunedì controlla se è disponibile un nuovo risultato
+cron.schedule('0 4 * * 1', async () => {    // ogni lunedì controlla se è disponibile un nuovo risultato
   let newRoundNumber = await getLastRoundNumber();
   if (lastRoundNum < newRoundNumber) {
     await weeklyUpdate(newRoundNumber);
@@ -862,6 +863,7 @@ async function getPilotsTable() {
 async function getPilotsValues() {
   let pilots = await getPilotsTable();
   let coins = await getCoins();
+  console.log(coins);
   let pilotsValues = [];
   for (let i = 0; i < pilots.length; i++) {
     pilotsValues[i] = {};
