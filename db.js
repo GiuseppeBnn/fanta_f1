@@ -36,7 +36,9 @@ const inizializeDatabase = async () => {
   //await newSeasonCleanup();
 
   await inizializePilotsTable();
-  await insertPilots();
+  let w = await insertPilots();
+  await createCoinsTable();
+
 
 
   await setLastRoundNumber();
@@ -46,12 +48,15 @@ const inizializeDatabase = async () => {
   await cachePilotsGlobalInfo();
 
   await createUsersTable();
-  await insertCoins();
   await createTeamTable();
   await retrieveAllRoundResults();
+  await pilotsValueUpdate();
   //await insertTestStandings();
 
   //insertTestUsers();
+
+  //testing
+  //console.log(await getPilotsScoreStandings());
 
 };
 
@@ -106,7 +111,6 @@ function getPilots() {
     try {
       const response = await axios.get(url);
       const driversData = response.data.MRData.DriverTable.Drivers;
-      console.log("//////////////////7", driversData);
       return driversData;
     } catch (error) {
       console.error("Errore durante la richiesta:", error.message);
@@ -115,28 +119,33 @@ function getPilots() {
   return getDriversData();
 }
 
-function insertPilots() {
+async function insertPilots() {
+
+  let pilots = await getPilots();
   //insert pilots json to db
-  getPilots().then((pilots) => {
-    pilots.forEach((pilot) => {
-      if (pilot.permanentNumber == 33) pilot.permanentNumber = 1;
-      if (pilot.permanentNumber == 15) pilot.permanentNumber = 40;
+  return new Promise((resolve, reject) => {
+    for (let i = 0; i < pilots.length; i++) {
+      if (pilots[i].permanentNumber == 33) pilots[i].permanentNumber = 1;
+      if (pilots[i].permanentNumber == 15) pilots[i].permanentNumber = 40;
+
       pool.execute(
         `
-          INSERT INTO pilots (id, name, surname)
-          VALUES (?,?,?)
-          ON DUPLICATE KEY UPDATE name = VALUES(name), surname = VALUES(surname)
-          `,
-        [pilot.permanentNumber, pilot.givenName, pilot.familyName],
+        INSERT INTO pilots (id, name, surname)
+        VALUES (?,?,?)
+        ON DUPLICATE KEY UPDATE id = VALUES(id), name = VALUES(name), surname = VALUES(surname)
+        `,
+        [pilots[i].permanentNumber, pilots[i].givenName, pilots[i].familyName],
         (err) => {
           if (err) {
             console.error("Errore durante l'inserimento dei dati:", err);
+            reject(err);
           } else {
             //console.log("Dati inseriti con successo!");
           }
         }
       );
-    });
+    }
+    resolve(true);
   });
 }
 
@@ -311,7 +320,7 @@ async function createCoinsTable() {
   });
 }
 
-async function insertCoins() {
+/*async function insertCoins() {
 
   let pilot_values = {
     "1": 1500,
@@ -357,7 +366,7 @@ async function insertCoins() {
       );
     }
   }
-}
+}*/
 
 async function updatePilotCoins(newScore) {    //dove newScore è un oggetto con chiave l'id del pilota e valore il punteggio da aggiungere
   return new Promise((resolve, reject) => {
@@ -492,8 +501,13 @@ function calculatePositionGainedBonus(lastRoundResult) {  //ritorna un oggetto c
   let results = lastRoundResult.MRData.RaceTable.Races[0].Results;
   for (let i = 0; i < length; i++) {
     let driverId = results[i].number;
-    let positionGained = results[i].grid - results[i].position;
-    positionGainedBonus[driverId] = positionGained * 2;
+    let positionGained = parseInt(results[i].grid) - parseInt(results[i].position);
+    if (positionGained > 0) {
+      positionGainedBonus[driverId] = positionGained * 2;
+    }
+    else if (positionGained <= 0) {
+      positionGainedBonus[driverId] = positionGained;
+    }
   }
   return positionGainedBonus;
 }
@@ -545,7 +559,9 @@ async function updateScore(lastRoundResult) {
     let score = parseInt(team.score);
     for (let j = 0; j < idPilots.length; j++) {
       let pilotId = idPilots[j];
-      score += parseInt(lastRaceScore[pilotId]) + parseInt(bonus[pilotId]);
+      if (typeof (lastRaceScore[pilotId]) != "undefined") {
+        score += parseInt(lastRaceScore[pilotId]) + parseInt(bonus[pilotId]);
+      }
     }
     pool.execute(
       `
@@ -632,6 +648,7 @@ async function getPilotScore(pilotId) {
 
 function sumScore(score) {
   let totalScore = 0;
+  console.log(score);
   score = score.split(";");
   for (let i = 0; i < score.length; i++) {
     if (score[i] != "") {
@@ -681,6 +698,7 @@ function weeklyUpdate(lastRoundNumber) {
   updateRoundTotalScore(lastRoundNumber);
   updateAllRoundsResultsCache();
   updatePilotsAllRoundsResultsCache();
+  pilotsValueUpdate();
 }
 
 async function teamsScoreCleanup() {
@@ -866,7 +884,6 @@ async function getPilotsTable() {
 async function getPilotsValues() {
   let pilots = await getPilotsTable();
   let coins = await getCoins();
-  console.log(coins);
   let pilotsValues = [];
   for (let i = 0; i < pilots.length; i++) {
     pilotsValues[i] = {};
@@ -900,7 +917,6 @@ async function updatePilotsAllRoundsResultsCache() {
     let pilotNick = pilotsNicks[pilotId];
     console.log(pilotNick);
     let data = await getPilotAllRoundsResults(pilotNick);
-    console.log(data[data.length-1].Results)
     pilotsAllRoundsResults[pilotId] = data;
   }
 }
@@ -1025,13 +1041,18 @@ async function getPilotAllRoundsResults(pilotNick) {
 
 async function retrievePilotAllInfo(pilotId) {
   let pilotScore = await getPilotScore(pilotId);
+  console.log(pilotScore);
   let pilotTotalScore = sumScore(pilotScore);
   let pilotStrippedScore = pilotScore.split(";");
   let pilotPointsForRound = [];
-  
-  for (let i = 0; i < pilotsAllRoundsResults[pilotId].length; i++) {
+  let j = parseInt(pilotStrippedScore.length) - 2;
+  console.log(pilotStrippedScore.length);
+  console.log(j);
+  console.log(pilotStrippedScore);
+  for (let i = pilotsAllRoundsResults[pilotId].length - 1; i >= 0; i--) {
     if (pilotStrippedScore[i] != "") {
-      let roundScore = pilotStrippedScore[i].split(",");
+      let roundScore = pilotStrippedScore[j].split(",");
+
       pilotPointsForRound[i] = {};
       pilotPointsForRound[i]["round"] = i + 1;
       pilotPointsForRound[i]["roundName"] = pilotsAllRoundsResults[pilotId][i]["raceName"];
@@ -1046,7 +1067,7 @@ async function retrievePilotAllInfo(pilotId) {
       pilotPointsForRound[i]["roundResult"] = pilotsAllRoundsResults[pilotId][i]["Results"][0];
       pilotPointsForRound[i]["totalScore"] = pilotTotalScore;
     }
-
+    j--;
   }
   return pilotPointsForRound;
 
@@ -1265,10 +1286,58 @@ function insertTestUsers() {
   }
 }
 
+async function getChampionshipStandings() {
+  let response = await axios.get('http://ergast.com/api/f1/current/driverStandings.json?limit=1000');
+  let standings = response.data.MRData.StandingsTable.StandingsLists[0].DriverStandings;
+  return standings;
+}
+
+
 
 async function pilotsValueUpdate() {
-  let
+  let standings = await getPilotsScoreStandings();
+  let max = parseInt(standings[0].score);
+  for (let i = 0; i < standings.length; i++) {
+    let pilotId = standings[i].id;
+    let delta = parseInt(standings[i].score);
+    if (delta < 0) {
+      delta = 1;
+    }
+    let pilotValue = 1800 * (delta / max);
+    console.log("value pilota", pilotId, ":", pilotValue);
+    pool.execute(
+      `
+      INSERT INTO coins (driverId, coins)
+      VALUES (?,?)
+      ON DUPLICATE KEY UPDATE driverId = VALUES(driverId), coins = VALUES(coins)
+      `,
+      [pilotId, pilotValue],
+      (err) => {
+        if (err) {
+          console.error("Errore durante l'aggiornamento del valore del pilota:", err);
+        } else {
+          //console.log("Id", pilotId, "valore:", pilotValue);
+        }
+      }
+    );
+  }
 }
+
+
+async function getPilotsScoreStandings() {
+  let pilots = await getPilotsId();
+  let pilotsScore = [];
+  for (let i = 0; i < pilots.length; i++) {
+    let pilotId = pilots[i].id;
+    let pilotScore = await getPilotTotalScore(pilotId);
+    pilotsScore[i] = {};
+    pilotsScore[i]["id"] = pilotId;
+    pilotsScore[i]["score"] = pilotScore;
+  }
+  pilotsScore.sort(function (a, b) { return b.score - a.score });
+  return pilotsScore;
+}
+
 
 
 
