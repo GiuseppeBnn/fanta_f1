@@ -15,6 +15,7 @@ async function cachePilotsGlobalInfo() {
   let pilots = await getPilots();
   pilots.forEach((pilot) => {
     if (pilot.permanentNumber == 33) pilot.permanentNumber = 1;
+    if (pilot.permanentNumber == 15) pilot.permanentNumber = 40;
     pilotsGlobalInfo[pilot.permanentNumber] = pilot;
   });
 }
@@ -43,7 +44,7 @@ const inizializeDatabase = async () => {
   await updateAllRoundsResultsCache();
   await updatePilotsAllRoundsResultsCache();
   await cachePilotsGlobalInfo();
-  
+
   await createUsersTable();
   await insertCoins();
   await createTeamTable();
@@ -105,6 +106,7 @@ function getPilots() {
     try {
       const response = await axios.get(url);
       const driversData = response.data.MRData.DriverTable.Drivers;
+      console.log("//////////////////7", driversData);
       return driversData;
     } catch (error) {
       console.error("Errore durante la richiesta:", error.message);
@@ -118,6 +120,7 @@ function insertPilots() {
   getPilots().then((pilots) => {
     pilots.forEach((pilot) => {
       if (pilot.permanentNumber == 33) pilot.permanentNumber = 1;
+      if (pilot.permanentNumber == 15) pilot.permanentNumber = 40;
       pool.execute(
         `
           INSERT INTO pilots (id, name, surname)
@@ -234,7 +237,7 @@ async function queryUser(username) {
 }
 
 function retrieveLastRoundResults() {
-  return allRoundResults[lastRoundNum-1];
+  return allRoundResults[lastRoundNum - 1];
 }
 
 async function verifyCredentials(username, password) {
@@ -530,7 +533,7 @@ function calculateRacePointsScore(lastRoundResult) {
   return finalPositionScore;
 }
 
-async function updateScore(lastRoundResult) {   
+async function updateScore(lastRoundResult) {
   let lastRaceScore = calculateRacePointsScore(lastRoundResult);
   let bonus = calculateBonus(lastRoundResult);
   await updatePilotsScore(lastRaceScore, lastRoundResult);
@@ -670,7 +673,7 @@ async function getPilotTotalScore(pilotId) {    //ok
 
 
 async function updateRoundTotalScore(roundNumber) {
-  let roundResult = await getRoundResult(roundNumber); 
+  let roundResult = await getRoundResult(roundNumber);
   await updateScore(roundResult);
 }
 
@@ -732,7 +735,7 @@ async function getTeamsId() {
   });
 }
 
- 
+
 async function hasTeam(userId) {
   return new Promise((resolve, reject) => {
     pool.execute(
@@ -873,7 +876,7 @@ async function getPilotsValues() {
     pilotsValues[i]["id"] = pilots[i].id;
     pilotsValues[i]["team"] = pilotsAllRoundsResults[pilots[i].id][0].Results[0].Constructor.name;
     pilotsValues[i]["constructorId"] = pilotsAllRoundsResults[pilots[i].id][0].Results[0].Constructor.constructorId;
-   
+
   }
   return pilotsValues;
 }
@@ -897,6 +900,7 @@ async function updatePilotsAllRoundsResultsCache() {
     let pilotNick = pilotsNicks[pilotId];
     console.log(pilotNick);
     let data = await getPilotAllRoundsResults(pilotNick);
+    console.log(data[data.length-1].Results)
     pilotsAllRoundsResults[pilotId] = data;
   }
 }
@@ -1000,13 +1004,15 @@ async function getPilotsNicks() {
     if (pilotsData[i].permanentNumber == 33) {
       pilotsData[i].permanentNumber = 1;
     }
+    if (pilotsData[i].permanentNumber == 15) {    //pezza per errore api liam lawson
+      pilotsData[i].permanentNumber = 40;
+    }
     pilotsNicks[pilotsData[i].permanentNumber] = pilotsData[i].driverId;
   }
 }
 
 async function getPilotAllRoundsResults(pilotNick) {
-  const url = "http://ergast.com/api/f1/current/drivers/"+pilotNick+"/results.json?limit=1000";
-  console.log(url);
+  const url = "http://ergast.com/api/f1/current/drivers/" + pilotNick + "/results.json?limit=1000";
   try {
     const response = await axios.get(url);
     const driversData = response.data.MRData.RaceTable.Races;
@@ -1022,12 +1028,13 @@ async function retrievePilotAllInfo(pilotId) {
   let pilotTotalScore = sumScore(pilotScore);
   let pilotStrippedScore = pilotScore.split(";");
   let pilotPointsForRound = [];
-  for (let i = 0; i < pilotStrippedScore.length; i++) {
+  
+  for (let i = 0; i < pilotsAllRoundsResults[pilotId].length; i++) {
     if (pilotStrippedScore[i] != "") {
       let roundScore = pilotStrippedScore[i].split(",");
       pilotPointsForRound[i] = {};
       pilotPointsForRound[i]["round"] = i + 1;
-      pilotPointsForRound[i]["roundName"]=pilotsAllRoundsResults[pilotId][i]["raceName"];
+      pilotPointsForRound[i]["roundName"] = pilotsAllRoundsResults[pilotId][i]["raceName"];
       pilotPointsForRound[i]["id"] = pilotId;
       pilotPointsForRound[i]["name"] = pilotsGlobalInfo[pilotId].givenName;
       pilotPointsForRound[i]["surname"] = pilotsGlobalInfo[pilotId].familyName;
@@ -1042,7 +1049,7 @@ async function retrievePilotAllInfo(pilotId) {
 
   }
   return pilotPointsForRound;
-  
+
 
 }
 
@@ -1055,7 +1062,7 @@ async function retrievePilotLastBonuses(pilotId) {
     let roundScore = pilotStrippedScore[pilotStrippedScore.length - 2].split(",");
     pilotPointsForRound = {};
     pilotPointsForRound["id"] = pilotId;
-    pilotPointsForRound["constructor"]=pilotsAllRoundsResults[pilotId][pilotsAllRoundsResults[pilotId].length-1]["Results"][0].Constructor;
+    pilotPointsForRound["constructor"] = pilotsAllRoundsResults[pilotId][pilotsAllRoundsResults[pilotId].length - 1]["Results"][0].Constructor;
     pilotPointsForRound["name"] = pilotsGlobalInfo[pilotId].givenName;
     pilotPointsForRound["surname"] = pilotsGlobalInfo[pilotId].familyName;
     pilotPointsForRound["points"] = roundScore[0];
@@ -1063,8 +1070,8 @@ async function retrievePilotLastBonuses(pilotId) {
     pilotPointsForRound["fastestLapBonus"] = roundScore[2];
     pilotPointsForRound["total"] = parseInt(roundScore[0]) + parseInt(roundScore[1]) + parseInt(roundScore[2]);
     pilotPointsForRound["round"] = pilotStrippedScore.length;
-    pilotPointsForRound["roundName"]=pilotsAllRoundsResults[pilotId][pilotsAllRoundsResults[pilotId].length-1]["raceName"];
-    pilotPointsForRound["roundInfo"]=pilotsAllRoundsResults[pilotId][pilotsAllRoundsResults[pilotId].length-1]["Circuit"];
+    pilotPointsForRound["roundName"] = pilotsAllRoundsResults[pilotId][pilotsAllRoundsResults[pilotId].length - 1]["raceName"];
+    pilotPointsForRound["roundInfo"] = pilotsAllRoundsResults[pilotId][pilotsAllRoundsResults[pilotId].length - 1]["Circuit"];
     pilotPointsForRound["totalScore"] = pilotTotalScore;
   }
 
@@ -1259,6 +1266,11 @@ function insertTestUsers() {
 }
 
 
+async function pilotsValueUpdate() {
+  let
+}
+
+
 
 //esporta modulo
-module.exports = { retrieveLastRoundResults,retrievePilotAllInfo,retrievePilotLastBonuses, updatePilotCoins, searchUsers, getUsersList, deleteUser, deleteTeam, retrieveTeamPilotsLastInfo, getTeamsSinglePilotsPoints, getPilotTotalScore, getPilotScore, checkTeamLegality, maxCoinBudget, calculateTeamScore, getPilotsValues, getUserId, hasTeam, retrieveAllRoundResults, weeklyUpdate, updateRoundTotalScore, getTeams, getTeam, inizializeDatabase, insertUser, verifyAdminAccess, verifyCredentials, queryUser, getPilots, updateScore, insertTeam, getTeams };
+module.exports = { retrieveLastRoundResults, retrievePilotAllInfo, retrievePilotLastBonuses, updatePilotCoins, searchUsers, getUsersList, deleteUser, deleteTeam, retrieveTeamPilotsLastInfo, getTeamsSinglePilotsPoints, getPilotTotalScore, getPilotScore, checkTeamLegality, maxCoinBudget, calculateTeamScore, getPilotsValues, getUserId, hasTeam, retrieveAllRoundResults, weeklyUpdate, updateRoundTotalScore, getTeams, getTeam, inizializeDatabase, insertUser, verifyAdminAccess, verifyCredentials, queryUser, getPilots, updateScore, insertTeam, getTeams };
