@@ -258,6 +258,11 @@ app.post("/team/create", requireAuth, async (req, res) => {
     res.redirect("/dashboard");
 });
 app.get("/pilot/:id", async (req, res) => {
+    const exist= await db.existPilot(req.params.id);
+    if(!exist){
+        return res.redirect("/not_found");
+    }
+
     let pilotInfo = await db.retrievePilotAllInfo(req.params.id);
     let isAuth = false;
     if(req.session && req.session.userId){
@@ -289,7 +294,10 @@ app.get("/team/:id", requireAuth, async (req, res) => {
     if (hasTeam) {
         let team = await db.getTeam(teamId);
         let teamPilotsScore = await db.retrieveTeamPilotsLastInfo(teamId);
-        res.render("team", { team: team, isAuth: true, teamPilotsScore: teamPilotsScore });   //TODO: team template
+        return res.render("team", { team: team, isAuth: true, teamPilotsScore: teamPilotsScore });   //TODO: team template
+    }
+    else {
+        return res.redirect("/not_found");
     }
 });
 
