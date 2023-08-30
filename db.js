@@ -1338,8 +1338,34 @@ async function getPilotsScoreStandings() {
   return pilotsScore;
 }
 
+async function existPilot(pilotId) {
+  return new Promise((resolve, reject) => {
+    pool.execute(
+      `
+      SELECT * FROM pilots
+      WHERE id = ?
+        `,
+      [pilotId],
+      (err, result) => {
+        if (err) {
+          console.error("Errore durante la ricerca del pilota:", err);
+          reject(err);
+        } else {
+          if (result.length > 0) {
+            resolve(true);
+          } else {
+            console.log("Pilota non presente nel database!");
+            resolve(false);
+          }
+        }
+      }
+    );
+  });
+}
+
+
 
 
 
 //esporta modulo
-module.exports = { retrieveLastRoundResults, retrievePilotAllInfo, retrievePilotLastBonuses, updatePilotCoins, searchUsers, getUsersList, deleteUser, deleteTeam, retrieveTeamPilotsLastInfo, getTeamsSinglePilotsPoints, getPilotTotalScore, getPilotScore, checkTeamLegality, maxCoinBudget, calculateTeamScore, getPilotsValues, getUserId, hasTeam, retrieveAllRoundResults, weeklyUpdate, updateRoundTotalScore, getTeams, getTeam, inizializeDatabase, insertUser, verifyAdminAccess, verifyCredentials, queryUser, getPilots, updateScore, insertTeam, getTeams };
+module.exports = { existPilot,retrieveLastRoundResults, retrievePilotAllInfo, retrievePilotLastBonuses, updatePilotCoins, searchUsers, getUsersList, deleteUser, deleteTeam, retrieveTeamPilotsLastInfo, getTeamsSinglePilotsPoints, getPilotTotalScore, getPilotScore, checkTeamLegality, maxCoinBudget, calculateTeamScore, getPilotsValues, getUserId, hasTeam, retrieveAllRoundResults, weeklyUpdate, updateRoundTotalScore, getTeams, getTeam, inizializeDatabase, insertUser, verifyAdminAccess, verifyCredentials, queryUser, getPilots, updateScore, insertTeam, getTeams };
