@@ -1295,6 +1295,12 @@ async function getChampionshipStandings() {
 
 
 async function pilotsValueUpdate() {
+  if (isNewSeason()) {
+    await setNewSeasonPilotsValue();
+    return;
+  }
+
+
   let standings = await getPilotsScoreStandings();
   let max = parseInt(standings[0].score);
   for (let i = 0; i < standings.length; i++) {
@@ -1304,7 +1310,6 @@ async function pilotsValueUpdate() {
       delta = 1;
     }
     let pilotValue = 1800 * (delta / max);
-    console.log("value pilota", pilotId, ":", pilotValue);
     pool.execute(
       `
       INSERT INTO coins (driverId, coins)
@@ -1364,8 +1369,75 @@ async function existPilot(pilotId) {
 }
 
 
+async function getPreviousSeasonStandings() {
+  const currentSeasonJson = await axios.get('http://ergast.com/api/f1/current.json?limit=1000');
+  const currentSeasonYear = parseInt(currentSeasonJson.data.MRData.RaceTable.season);
+  const previousSeasonYear = currentSeasonYear - 1;
+  console.log(previousSeasonYear);
+  const previousSeasonJson = await axios.get('http://ergast.com/api/f1/' + previousSeasonYear + '/driverStandings.json?limit=1000');
+  const previousSeasonStandings = previousSeasonJson.data.MRData.StandingsTable.StandingsLists[0].DriverStandings;
+  return previousSeasonStandings;
+}
+
+function isNewSeason() {
+  if (lastRoundNum <= 1) {
+    return true;
+  }
+  else {
+    return false;
+  }
+}
+
+async function getPreviousSeasonPilotsId(standings) {
+  let pilotsIds = [];
+  for (let i = 0; i < standings.length; i++) {
+    let pilotId = parseInt(standings[i].Driver.permanentNumber);
+    if (pilotId == 33) {
+      pilotId = 1;
+    }
+    if (pilotId == 15) {    //pezza per errore liam lawson dell api
+      pilotId = 40;
+    }
+    pilotsIds[i] = pilotId;
+  }
+  return pilotsIds;
+}
+
+async function setNewSeasonPilotsValue() {
+  let standings = await getPreviousSeasonStandings();
+  let pilotsIdsPrevious = await getPreviousSeasonPilotsId(standings);
+  let pilotsIds = await getPilotsId();
+  pilotsIds = pilotsIds.map(a => a.id);
+  let max = parseInt(standings[0].points);
+  for (let i = 0; i < pilotsIds.length; i++) {
+    let pilotId = pilotsIds[i];
+    let delta = 1;
+    if (pilotsIdsPrevious.includes(pilotId)) {
+      delta = parseInt(standings[pilotsIdsPrevious.indexOf(pilotId)].points);
+    }
+    let pilotValue = 1800 * (delta / max);
+    console.log(pilotId, pilotValue);
+    pool.execute(
+      `
+      INSERT INTO coins (driverId, coins)
+      VALUES (?,?)
+      ON DUPLICATE KEY UPDATE driverId = VALUES(driverId), coins = VALUES(coins)
+      `,
+      [pilotId, pilotValue],
+      (err) => {
+        if (err) {
+          console.error("Errore durante l'aggiornamento del valore del pilota:", err);
+        } else {
+          //console.log("Id", pilotId, "valore:", pilotValue);
+        }
+      }
+    );
+  }
+}
+
+
 
 
 
 //esporta modulo
-module.exports = { existPilot,retrieveLastRoundResults, retrievePilotAllInfo, retrievePilotLastBonuses, updatePilotCoins, searchUsers, getUsersList, deleteUser, deleteTeam, retrieveTeamPilotsLastInfo, getTeamsSinglePilotsPoints, getPilotTotalScore, getPilotScore, checkTeamLegality, maxCoinBudget, calculateTeamScore, getPilotsValues, getUserId, hasTeam, retrieveAllRoundResults, weeklyUpdate, updateRoundTotalScore, getTeams, getTeam, inizializeDatabase, insertUser, verifyAdminAccess, verifyCredentials, queryUser, getPilots, updateScore, insertTeam, getTeams };
+module.exports = { existPilot, retrieveLastRoundResults, retrievePilotAllInfo, retrievePilotLastBonuses, updatePilotCoins, searchUsers, getUsersList, deleteUser, deleteTeam, retrieveTeamPilotsLastInfo, getTeamsSinglePilotsPoints, getPilotTotalScore, getPilotScore, checkTeamLegality, maxCoinBudget, calculateTeamScore, getPilotsValues, getUserId, hasTeam, retrieveAllRoundResults, weeklyUpdate, updateRoundTotalScore, getTeams, getTeam, inizializeDatabase, insertUser, verifyAdminAccess, verifyCredentials, queryUser, getPilots, updateScore, insertTeam, getTeams };
