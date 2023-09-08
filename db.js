@@ -2,6 +2,12 @@ const mysql = require("mysql2");
 const axios = require("axios");
 const argon2 = require("argon2");
 const cron = require("node-cron");
+require("dotenv").config();
+
+const host = process.env.HOST;
+const usr = process.env.USR;
+const password = process.env.PASSWORD;
+const database = process.env.DATABASE;
 
 const pool = createPool();
 const maxCoinBudget = 2000;
@@ -22,10 +28,10 @@ async function cachePilotsGlobalInfo() {
 
 function createPool() {
   let pool = mysql.createPool({
-    host: "localhost",
-    user: "admin",
-    password: "admin",
-    database: "ff1",
+    host: host,
+    user: usr,
+    password: password,
+    database: database,
     waitForConnections: true,
     connectionLimit: 20,
   });
